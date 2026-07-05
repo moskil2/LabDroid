@@ -2,6 +2,7 @@ package com.truesensor.app.core.navigation
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,11 +38,23 @@ fun TrueSensorApp(themeViewModel: ThemeViewModel = hiltViewModel()) {
         val navController = rememberNavController()
         val backStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = backStackEntry?.destination?.route
+        val isTopLevelRoute = currentRoute == null ||
+            TrueSensorDestination.entries.any { it.route == currentRoute }
 
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { Text("TrueSensor") },
+                    navigationIcon = {
+                        if (!isTopLevelRoute) {
+                            IconButton(onClick = { navController.navigateUp() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                    contentDescription = "Back",
+                                )
+                            }
+                        }
+                    },
                     actions = {
                         IconButton(onClick = { themeViewModel.toggleTheme(darkTheme) }) {
                             Icon(
@@ -53,22 +66,24 @@ fun TrueSensorApp(themeViewModel: ThemeViewModel = hiltViewModel()) {
                 )
             },
             bottomBar = {
-                NavigationBar {
-                    TrueSensorDestination.entries.forEach { destination ->
-                        NavigationBarItem(
-                            selected = currentRoute == destination.route,
-                            onClick = {
-                                navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
+                if (isTopLevelRoute) {
+                    NavigationBar {
+                        TrueSensorDestination.entries.forEach { destination ->
+                            NavigationBarItem(
+                                selected = currentRoute == destination.route,
+                                onClick = {
+                                    navController.navigate(destination.route) {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(destination.icon, contentDescription = destination.label) },
-                            label = { Text(destination.label) },
-                        )
+                                },
+                                icon = { Icon(destination.icon, contentDescription = destination.label) },
+                                label = { Text(destination.label) },
+                            )
+                        }
                     }
                 }
             },
