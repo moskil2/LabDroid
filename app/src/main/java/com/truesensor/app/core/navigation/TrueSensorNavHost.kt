@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.truesensor.app.feature.camera.CamerasScreen
 import com.truesensor.app.feature.dashboard.DashboardScreen
 import com.truesensor.app.feature.gps.GpsScreen
 import com.truesensor.app.feature.hardware.HardwareScreen
@@ -52,7 +53,10 @@ fun TrueSensorNavHost(
             )
         }
         composable(TrueSensorDestination.HARDWARE.route) {
-            HardwareScreen(contentPadding = contentPadding)
+            HardwareScreen(
+                contentPadding = contentPadding,
+                onNavigateToCameras = { navController.navigate("cameras") },
+            )
         }
         composable(TrueSensorDestination.MONITOR.route) {
             MonitorScreen(contentPadding = contentPadding)
@@ -68,6 +72,9 @@ fun TrueSensorNavHost(
         }
         composable("gps") {
             GpsScreen(contentPadding = contentPadding)
+        }
+        composable("cameras") {
+            CamerasScreen(contentPadding = contentPadding)
         }
     }
 }

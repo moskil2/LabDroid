@@ -29,7 +29,7 @@ private data class ShortcutChip(val label: String, val route: String?)
 private val shortcutChips = listOf(
     ShortcutChip("Live Monitor", TrueSensorDestination.MONITOR.route),
     ShortcutChip("GPS", "gps"),
-    ShortcutChip("Cameras", null),
+    ShortcutChip("Cameras", "cameras"),
     ShortcutChip("Battery", TrueSensorDestination.HARDWARE.route),
     ShortcutChip("Export", TrueSensorDestination.SETTINGS.route),
 )
