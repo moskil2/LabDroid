@@ -1,8 +1,12 @@
 package com.truesensor.app.feature.sensors.detail
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.truesensor.app.data.export.ExportFormat
+import com.truesensor.app.data.export.ExportRepository
+import com.truesensor.app.data.export.SensorSampleRow
 import com.truesensor.app.data.sensors.SensorDelayOption
 import com.truesensor.app.data.sensors.SensorInfo
 import com.truesensor.app.data.sensors.SensorRepository
@@ -20,12 +24,13 @@ import javax.inject.Inject
 class SensorDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val sensorRepository: SensorRepository,
+    private val exportRepository: ExportRepository,
 ) : ViewModel() {
 
     private val sensorType: Int = checkNotNull(savedStateHandle["type"])
     val sensorInfo: SensorInfo? = sensorRepository.getSensorInfo(sensorType)
 
-    private val history = ArrayDeque<Float>()
+    private val history = ArrayDeque<Pair<Long, Float>>()
 
     private val _uiState = MutableStateFlow(SensorDetailUiState())
     val uiState: StateFlow<SensorDetailUiState> = _uiState.asStateFlow()
@@ -42,23 +47,23 @@ class SensorDetailViewModel @Inject constructor(
         collectionJob = viewModelScope.launch {
             sensorRepository.observeSensorReadings(sensor, _uiState.value.delayOption.periodUs).collect { reading ->
                 if (_uiState.value.isPaused) return@collect
-                onSample(representativeValue(reading.values))
+                onSample(System.currentTimeMillis(), representativeValue(reading.values))
             }
         }
     }
 
-    private fun onSample(value: Float) {
-        history.addLast(value)
+    private fun onSample(timestampMillis: Long, value: Float) {
+        history.addLast(timestampMillis to value)
         if (history.size > HISTORY_SIZE) history.removeFirst()
-        val list = history.toList()
-        val avg = list.average().toFloat()
-        val variance = list.sumOf { ((it - avg) * (it - avg)).toDouble() } / list.size
+        val values = history.map { it.second }
+        val avg = values.average().toFloat()
+        val variance = values.sumOf { ((it - avg) * (it - avg)).toDouble() } / values.size
         _uiState.update {
             it.copy(
                 latestValue = value,
-                history = list,
-                minValue = list.min(),
-                maxValue = list.max(),
+                history = values,
+                minValue = values.min(),
+                maxValue = values.max(),
                 average = avg,
                 stdDev = kotlin.math.sqrt(variance).toFloat(),
             )
@@ -85,6 +90,14 @@ class SensorDetailViewModel @Inject constructor(
                 average = null,
                 stdDev = null,
             )
+        }
+    }
+
+    fun exportHistory(uri: Uri, format: ExportFormat) {
+        val label = sensorInfo?.name ?: "sensor"
+        val rows = history.map { (timestamp, value) -> SensorSampleRow(timestamp, label, value) }
+        viewModelScope.launch {
+            exportRepository.exportSensorSamples(uri, format, label, rows)
         }
     }
 

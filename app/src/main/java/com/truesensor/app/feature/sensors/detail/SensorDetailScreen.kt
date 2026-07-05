@@ -43,8 +43,10 @@ import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLa
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
+import com.truesensor.app.core.designsystem.component.ExportMenuButton
 import com.truesensor.app.core.designsystem.component.InfoCard
 import com.truesensor.app.core.designsystem.component.SectionCard
+import com.truesensor.app.data.export.ExportFormat
 import com.truesensor.app.data.sensors.SensorDelayOption
 import com.truesensor.app.data.sensors.SensorInfo
 import com.truesensor.app.data.sensors.unitFor
@@ -88,6 +90,9 @@ fun SensorDetailScreen(
                 isPaused = uiState.isPaused,
                 onPause = viewModel::togglePause,
                 onReset = viewModel::reset,
+                sensorName = sensorInfo.name,
+                hasSamples = uiState.history.isNotEmpty(),
+                onExport = viewModel::exportHistory,
             )
         }
         item { MetadataCard(sensorInfo) }
@@ -231,7 +236,15 @@ private fun StatsGrid(uiState: SensorDetailUiState) {
 }
 
 @Composable
-private fun ActionsRow(isPaused: Boolean, onPause: () -> Unit, onReset: () -> Unit) {
+private fun ActionsRow(
+    isPaused: Boolean,
+    onPause: () -> Unit,
+    onReset: () -> Unit,
+    sensorName: String,
+    hasSamples: Boolean,
+    onExport: (android.net.Uri, ExportFormat) -> Unit,
+) {
+    val slug = remember(sensorName) { sensorName.lowercase().replace(Regex("[^a-z0-9]+"), "_") }
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
         FilledTonalButton(onClick = onPause, modifier = Modifier.weight(1f)) {
             Text(if (isPaused) "Resume" else "Pause")
@@ -239,9 +252,13 @@ private fun ActionsRow(isPaused: Boolean, onPause: () -> Unit, onReset: () -> Un
         FilledTonalButton(onClick = onReset, modifier = Modifier.weight(1f)) {
             Text("Reset")
         }
-        Button(onClick = {}, enabled = false, modifier = Modifier.weight(1f)) {
-            Text("Export")
-        }
+        ExportMenuButton(
+            formats = listOf(ExportFormat.CSV, ExportFormat.JSON, ExportFormat.XML, ExportFormat.TXT),
+            fileNameFor = { format -> "$slug.${format.extension}" },
+            onFormatChosen = onExport,
+            enabled = hasSamples,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 

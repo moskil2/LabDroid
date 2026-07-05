@@ -1,8 +1,15 @@
 package com.truesensor.app.feature.monitor
 
 import android.hardware.SensorManager
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.truesensor.app.data.export.ExportFormat
+import com.truesensor.app.data.export.ExportRepository
+import com.truesensor.app.data.export.SensorSampleRow
+import com.truesensor.app.data.recording.RecordingDao
+import com.truesensor.app.data.recording.RecordingSessionEntity
+import com.truesensor.app.data.recording.SensorSampleEntity
 import com.truesensor.app.data.sensors.SensorInfo
 import com.truesensor.app.data.sensors.SensorRepository
 import com.truesensor.app.data.sensors.representativeValue
@@ -18,6 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MonitorViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
+    private val recordingDao: RecordingDao,
+    private val exportRepository: ExportRepository,
 ) : ViewModel() {
 
     val allSensors: List<SensorInfo> = sensorRepository.getGroupedSensors()
@@ -33,7 +42,11 @@ class MonitorViewModel @Inject constructor(
     private val _isRecording = MutableStateFlow(false)
     val isRecording: StateFlow<Boolean> = _isRecording.asStateFlow()
 
+    private val _lastSessionId = MutableStateFlow<Long?>(null)
+    val lastSessionId: StateFlow<Long?> = _lastSessionId.asStateFlow()
+
     private val collectionJobs = mutableMapOf<Int, Job>()
+    private var activeSessionId: Long? = null
 
     fun togglePinned(sensorInfo: SensorInfo) {
         val type = sensorInfo.type
@@ -54,13 +67,55 @@ class MonitorViewModel @Inject constructor(
                                 history = (current.history + value).takeLast(HISTORY_SIZE),
                             ))
                         }
+                        val sessionId = activeSessionId
+                        if (_isRecording.value && sessionId != null) {
+                            recordingDao.insertSensorSample(
+                                SensorSampleEntity(
+                                    sessionId = sessionId,
+                                    timestampMillis = System.currentTimeMillis(),
+                                    label = sensorInfo.name,
+                                    value = value,
+                                ),
+                            )
+                        }
                     }
             }
         }
     }
 
     fun toggleRecording() {
-        _isRecording.update { !it }
+        viewModelScope.launch {
+            if (_isRecording.value) {
+                val sessionId = activeSessionId
+                if (sessionId != null) {
+                    recordingDao.getSession(sessionId)?.let { session ->
+                        recordingDao.updateSession(session.copy(endedAtMillis = System.currentTimeMillis()))
+                    }
+                }
+                _isRecording.value = false
+                _lastSessionId.value = sessionId
+                activeSessionId = null
+            } else {
+                val sessionId = recordingDao.insertSession(
+                    RecordingSessionEntity(
+                        kind = "monitor",
+                        label = "Live Monitor",
+                        startedAtMillis = System.currentTimeMillis(),
+                    ),
+                )
+                activeSessionId = sessionId
+                _isRecording.value = true
+                _lastSessionId.value = null
+            }
+        }
+    }
+
+    fun exportSession(sessionId: Long, uri: Uri, format: ExportFormat) {
+        viewModelScope.launch {
+            val samples = recordingDao.getSensorSamples(sessionId)
+            val rows = samples.map { SensorSampleRow(it.timestampMillis, it.label, it.value) }
+            exportRepository.exportSensorSamples(uri, format, "Live Monitor", rows)
+        }
     }
 
     override fun onCleared() {

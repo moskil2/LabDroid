@@ -40,7 +40,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.truesensor.app.core.designsystem.component.ExportMenuButton
 import com.truesensor.app.core.designsystem.component.InfoCard
+import com.truesensor.app.data.export.ExportFormat
 
 private enum class GpsTab(val label: String) { LOCATION("Location"), COMPASS("Compass") }
 
@@ -105,6 +107,7 @@ private fun GpsContent(
     var selectedTab by rememberSaveable { mutableStateOf(GpsTab.LOCATION) }
     val locationState by viewModel.locationState.collectAsState()
     val compassState by viewModel.compassState.collectAsState()
+    val lastSessionId by viewModel.lastSessionId.collectAsState()
 
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
@@ -138,9 +141,17 @@ private fun GpsContent(
                     FilledTonalButton(onClick = viewModel::toggleTracking, modifier = Modifier.weight(1f)) {
                         Text(if (locationState.isTracking) "Stop Track" else "Start Track")
                     }
-                    Button(onClick = {}, enabled = false, modifier = Modifier.weight(1f)) {
-                        Text("Export GPX·CSV")
-                    }
+                    val sessionId = lastSessionId
+                    ExportMenuButton(
+                        formats = listOf(ExportFormat.GPX, ExportFormat.CSV),
+                        fileNameFor = { format -> "gps_track_$sessionId.${format.extension}" },
+                        onFormatChosen = { uri, format ->
+                            sessionId?.let { viewModel.exportSession(it, uri, format) }
+                        },
+                        enabled = sessionId != null,
+                        label = "Export GPX·CSV",
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
         } else {

@@ -4,9 +4,15 @@ import android.hardware.GeomagneticField
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.location.Location
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.truesensor.app.data.export.ExportFormat
+import com.truesensor.app.data.export.ExportRepository
 import com.truesensor.app.data.location.LocationRepository
+import com.truesensor.app.data.recording.LocationSampleEntity
+import com.truesensor.app.data.recording.RecordingDao
+import com.truesensor.app.data.recording.RecordingSessionEntity
 import com.truesensor.app.data.sensors.SensorRepository
 import com.truesensor.app.data.sensors.representativeValue
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +27,8 @@ import javax.inject.Inject
 class GpsViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val sensorRepository: SensorRepository,
+    private val recordingDao: RecordingDao,
+    private val exportRepository: ExportRepository,
 ) : ViewModel() {
 
     private val _locationState = MutableStateFlow(LocationUiState())
@@ -29,7 +37,11 @@ class GpsViewModel @Inject constructor(
     private val _compassState = MutableStateFlow(CompassUiState())
     val compassState: StateFlow<CompassUiState> = _compassState.asStateFlow()
 
+    private val _lastSessionId = MutableStateFlow<Long?>(null)
+    val lastSessionId: StateFlow<Long?> = _lastSessionId.asStateFlow()
+
     private var lastLocation: Location? = null
+    private var activeSessionId: Long? = null
 
     init {
         viewModelScope.launch {
@@ -45,6 +57,21 @@ class GpsViewModel @Inject constructor(
                         accuracyHorizontal = location.accuracy,
                         accuracyVertical = if (location.hasVerticalAccuracy()) location.verticalAccuracyMeters else null,
                         provider = location.provider ?: "Unknown",
+                    )
+                }
+                val sessionId = activeSessionId
+                if (_locationState.value.isTracking && sessionId != null) {
+                    recordingDao.insertLocationSample(
+                        LocationSampleEntity(
+                            sessionId = sessionId,
+                            timestampMillis = System.currentTimeMillis(),
+                            latitude = location.latitude,
+                            longitude = location.longitude,
+                            altitude = location.altitude,
+                            speed = location.speed,
+                            bearing = location.bearing,
+                            accuracy = location.accuracy,
+                        ),
                     )
                 }
             }
@@ -92,6 +119,36 @@ class GpsViewModel @Inject constructor(
     }
 
     fun toggleTracking() {
-        _locationState.update { it.copy(isTracking = !it.isTracking) }
+        viewModelScope.launch {
+            if (_locationState.value.isTracking) {
+                val sessionId = activeSessionId
+                if (sessionId != null) {
+                    recordingDao.getSession(sessionId)?.let { session ->
+                        recordingDao.updateSession(session.copy(endedAtMillis = System.currentTimeMillis()))
+                    }
+                }
+                _locationState.update { it.copy(isTracking = false) }
+                _lastSessionId.value = sessionId
+                activeSessionId = null
+            } else {
+                val sessionId = recordingDao.insertSession(
+                    RecordingSessionEntity(
+                        kind = "location",
+                        label = "GPS Track",
+                        startedAtMillis = System.currentTimeMillis(),
+                    ),
+                )
+                activeSessionId = sessionId
+                _locationState.update { it.copy(isTracking = true) }
+                _lastSessionId.value = null
+            }
+        }
+    }
+
+    fun exportSession(sessionId: Long, uri: Uri, format: ExportFormat) {
+        viewModelScope.launch {
+            val samples = recordingDao.getLocationSamples(sessionId)
+            exportRepository.exportLocationSamples(uri, format, samples)
+        }
     }
 }

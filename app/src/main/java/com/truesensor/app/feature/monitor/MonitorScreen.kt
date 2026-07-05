@@ -40,8 +40,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.truesensor.app.core.designsystem.component.ExportMenuButton
 import com.truesensor.app.core.designsystem.component.Sparkline
 import com.truesensor.app.core.designsystem.component.StatusDot
+import com.truesensor.app.data.export.ExportFormat
 import com.truesensor.app.data.sensors.SensorInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +56,7 @@ fun MonitorScreen(
     val pinnedTypes by viewModel.pinnedTypes.collectAsState()
     val pinnedStates by viewModel.pinnedStates.collectAsState()
     val isRecording by viewModel.isRecording.collectAsState()
+    val lastSessionId by viewModel.lastSessionId.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -78,6 +81,18 @@ fun MonitorScreen(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Select")
                 }
+            }
+
+            lastSessionId?.let { sessionId ->
+                ExportMenuButton(
+                    formats = listOf(ExportFormat.CSV, ExportFormat.JSON, ExportFormat.XML, ExportFormat.TXT),
+                    fileNameFor = { format -> "live_monitor_session_$sessionId.${format.extension}" },
+                    onFormatChosen = { uri, format -> viewModel.exportSession(sessionId, uri, format) },
+                    label = "Export recording",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                )
             }
 
             if (pinnedTypes.isEmpty()) {
