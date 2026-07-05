@@ -1,12 +1,12 @@
 package com.truesensor.app.core.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.compose.foundation.layout.PaddingValues
 import com.truesensor.app.feature.dashboard.DashboardScreen
 import com.truesensor.app.feature.hardware.HardwareScreen
 import com.truesensor.app.feature.monitor.MonitorScreen
@@ -23,13 +23,22 @@ fun TrueSensorNavHost(
         startDestination = TrueSensorDestination.DASHBOARD.route,
     ) {
         composable(TrueSensorDestination.DASHBOARD.route) {
-            DashboardScreen(modifier = Modifier.padding(contentPadding))
+            DashboardScreen(
+                contentPadding = contentPadding,
+                onNavigate = { destination ->
+                    navController.navigate(destination.route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+            )
         }
         composable(TrueSensorDestination.SENSORS.route) {
             SensorsScreen(modifier = Modifier.padding(contentPadding))
         }
         composable(TrueSensorDestination.HARDWARE.route) {
-            HardwareScreen(modifier = Modifier.padding(contentPadding))
+            HardwareScreen(contentPadding = contentPadding)
         }
         composable(TrueSensorDestination.MONITOR.route) {
             MonitorScreen(modifier = Modifier.padding(contentPadding))
