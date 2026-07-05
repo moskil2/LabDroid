@@ -15,10 +15,14 @@ import com.truesensor.app.data.recording.RecordingDao
 import com.truesensor.app.data.recording.RecordingSessionEntity
 import com.truesensor.app.data.sensors.SensorRepository
 import com.truesensor.app.data.sensors.representativeValue
+import com.truesensor.app.data.settings.PreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,11 +32,20 @@ class GpsViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val sensorRepository: SensorRepository,
     private val recordingDao: RecordingDao,
+    preferencesRepository: PreferencesRepository,
     private val exportRepository: ExportRepository,
 ) : ViewModel() {
 
     private val _locationState = MutableStateFlow(LocationUiState())
     val locationState: StateFlow<LocationUiState> = _locationState.asStateFlow()
+
+    val useImperialUnits: StateFlow<Boolean> = preferencesRepository.userPreferences
+        .map { it.useImperialUnits }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    val exportFolderUri: StateFlow<String?> = preferencesRepository.userPreferences
+        .map { it.exportFolderUri }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val _compassState = MutableStateFlow(CompassUiState())
     val compassState: StateFlow<CompassUiState> = _compassState.asStateFlow()

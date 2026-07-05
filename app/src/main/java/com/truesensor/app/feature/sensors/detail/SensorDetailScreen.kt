@@ -70,6 +70,7 @@ fun SensorDetailScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
+    val exportFolderUri by viewModel.exportFolderUri.collectAsState()
 
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
@@ -93,6 +94,7 @@ fun SensorDetailScreen(
                 sensorName = sensorInfo.name,
                 hasSamples = uiState.history.isNotEmpty(),
                 onExport = viewModel::exportHistory,
+                exportFolderUri = exportFolderUri,
             )
         }
         item { MetadataCard(sensorInfo) }
@@ -243,6 +245,7 @@ private fun ActionsRow(
     sensorName: String,
     hasSamples: Boolean,
     onExport: (android.net.Uri, ExportFormat) -> Unit,
+    exportFolderUri: String?,
 ) {
     val slug = remember(sensorName) { sensorName.lowercase().replace(Regex("[^a-z0-9]+"), "_") }
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
@@ -258,6 +261,7 @@ private fun ActionsRow(
             onFormatChosen = onExport,
             enabled = hasSamples,
             modifier = Modifier.weight(1f),
+            defaultFolderUri = exportFolderUri,
         )
     }
 }

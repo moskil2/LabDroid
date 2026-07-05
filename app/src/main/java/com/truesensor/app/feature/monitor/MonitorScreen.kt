@@ -57,6 +57,7 @@ fun MonitorScreen(
     val pinnedStates by viewModel.pinnedStates.collectAsState()
     val isRecording by viewModel.isRecording.collectAsState()
     val lastSessionId by viewModel.lastSessionId.collectAsState()
+    val exportFolderUri by viewModel.exportFolderUri.collectAsState()
     var showSheet by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -92,6 +93,7 @@ fun MonitorScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp),
+                    defaultFolderUri = exportFolderUri,
                 )
             }
 

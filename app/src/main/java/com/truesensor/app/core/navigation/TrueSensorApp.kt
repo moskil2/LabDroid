@@ -1,20 +1,31 @@
 package com.truesensor.app.core.navigation
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -25,7 +36,10 @@ import com.truesensor.app.core.designsystem.theme.TrueSensorTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrueSensorApp(themeViewModel: ThemeViewModel = hiltViewModel()) {
+fun TrueSensorApp(
+    windowSizeClass: WindowSizeClass,
+    themeViewModel: ThemeViewModel = hiltViewModel(),
+) {
     val themeMode by themeViewModel.themeMode.collectAsStateWithLifecycle()
     val systemDark = isSystemInDarkTheme()
     val darkTheme = when (themeMode) {
@@ -33,6 +47,7 @@ fun TrueSensorApp(themeViewModel: ThemeViewModel = hiltViewModel()) {
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
+    val useNavigationRail = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
 
     TrueSensorTheme(darkTheme = darkTheme) {
         val navController = rememberNavController()
@@ -40,6 +55,14 @@ fun TrueSensorApp(themeViewModel: ThemeViewModel = hiltViewModel()) {
         val currentRoute = backStackEntry?.destination?.route
         val isTopLevelRoute = currentRoute == null ||
             TrueSensorDestination.entries.any { it.route == currentRoute }
+
+        fun navigateToTab(route: String) {
+            navController.navigate(route) {
+                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
 
         Scaffold(
             topBar = {
@@ -56,6 +79,9 @@ fun TrueSensorApp(themeViewModel: ThemeViewModel = hiltViewModel()) {
                         }
                     },
                     actions = {
+                        IconButton(onClick = { navController.navigate("search") }) {
+                            Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+                        }
                         IconButton(onClick = { themeViewModel.toggleTheme(darkTheme) }) {
                             Icon(
                                 imageVector = if (darkTheme) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
@@ -66,20 +92,12 @@ fun TrueSensorApp(themeViewModel: ThemeViewModel = hiltViewModel()) {
                 )
             },
             bottomBar = {
-                if (isTopLevelRoute) {
+                if (isTopLevelRoute && !useNavigationRail) {
                     NavigationBar {
                         TrueSensorDestination.entries.forEach { destination ->
                             NavigationBarItem(
                                 selected = currentRoute == destination.route,
-                                onClick = {
-                                    navController.navigate(destination.route) {
-                                        popUpTo(navController.graph.startDestinationId) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
+                                onClick = { navigateToTab(destination.route) },
                                 icon = { Icon(destination.icon, contentDescription = destination.label) },
                                 label = { Text(destination.label) },
                             )
@@ -88,7 +106,27 @@ fun TrueSensorApp(themeViewModel: ThemeViewModel = hiltViewModel()) {
                 }
             },
         ) { innerPadding ->
-            TrueSensorNavHost(navController = navController, contentPadding = innerPadding)
+            if (isTopLevelRoute && useNavigationRail) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    NavigationRail(modifier = Modifier.padding(top = innerPadding.calculateTopPadding())) {
+                        TrueSensorDestination.entries.forEach { destination ->
+                            NavigationRailItem(
+                                selected = currentRoute == destination.route,
+                                onClick = { navigateToTab(destination.route) },
+                                icon = { Icon(destination.icon, contentDescription = destination.label) },
+                                label = { Text(destination.label) },
+                            )
+                        }
+                    }
+                    TrueSensorNavHost(
+                        navController = navController,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            } else {
+                TrueSensorNavHost(navController = navController, contentPadding = innerPadding)
+            }
         }
     }
 }

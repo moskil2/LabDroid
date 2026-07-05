@@ -108,6 +108,8 @@ private fun GpsContent(
     val locationState by viewModel.locationState.collectAsState()
     val compassState by viewModel.compassState.collectAsState()
     val lastSessionId by viewModel.lastSessionId.collectAsState()
+    val useImperialUnits by viewModel.useImperialUnits.collectAsState()
+    val exportFolderUri by viewModel.exportFolderUri.collectAsState()
 
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
@@ -135,7 +137,7 @@ private fun GpsContent(
 
         if (selectedTab == GpsTab.LOCATION) {
             item { MapPlaceholder() }
-            item { LocationGrid(locationState) }
+            item { LocationGrid(locationState, useImperialUnits) }
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                     FilledTonalButton(onClick = viewModel::toggleTracking, modifier = Modifier.weight(1f)) {
@@ -151,6 +153,7 @@ private fun GpsContent(
                         enabled = sessionId != null,
                         label = "Export GPX·CSV",
                         modifier = Modifier.weight(1f),
+                        defaultFolderUri = exportFolderUri,
                     )
                 }
             }
@@ -179,16 +182,26 @@ private fun MapPlaceholder() {
     }
 }
 
+private const val METERS_TO_FEET = 3.28084f
+private const val MPS_TO_MPH = 2.23694f
+
 @Composable
-private fun LocationGrid(state: LocationUiState) {
+private fun LocationGrid(state: LocationUiState, useImperialUnits: Boolean) {
+    val distanceUnit = if (useImperialUnits) "ft" else "m"
+    val speedUnit = if (useImperialUnits) "mph" else "m/s"
+    fun formatDistance(meters: Float): String =
+        "%.1f %s".format(if (useImperialUnits) meters * METERS_TO_FEET else meters, distanceUnit)
+    fun formatSpeed(metersPerSecond: Float): String =
+        "%.1f %s".format(if (useImperialUnits) metersPerSecond * MPS_TO_MPH else metersPerSecond, speedUnit)
+
     val entries = listOf(
         "Latitude" to (state.latitude?.let { "%.6f".format(it) } ?: "—"),
         "Longitude" to (state.longitude?.let { "%.6f".format(it) } ?: "—"),
-        "Altitude" to (state.altitude?.let { "%.1f m".format(it) } ?: "—"),
-        "Speed" to (state.speed?.let { "%.1f m/s".format(it) } ?: "—"),
+        "Altitude" to (state.altitude?.let { formatDistance(it.toFloat()) } ?: "—"),
+        "Speed" to (state.speed?.let { formatSpeed(it) } ?: "—"),
         "Bearing" to (state.bearing?.let { "%.0f°".format(it) } ?: "—"),
-        "Accuracy H" to (state.accuracyHorizontal?.let { "%.1f m".format(it) } ?: "—"),
-        "Accuracy V" to (state.accuracyVertical?.let { "%.1f m".format(it) } ?: "—"),
+        "Accuracy H" to (state.accuracyHorizontal?.let { formatDistance(it) } ?: "—"),
+        "Accuracy V" to (state.accuracyVertical?.let { formatDistance(it) } ?: "—"),
         "Satellites" to "${state.satellitesUsed}/${state.satellitesInView}",
         "Provider" to state.provider,
     )

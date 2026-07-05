@@ -11,11 +11,16 @@ import com.truesensor.app.data.sensors.SensorDelayOption
 import com.truesensor.app.data.sensors.SensorInfo
 import com.truesensor.app.data.sensors.SensorRepository
 import com.truesensor.app.data.sensors.representativeValue
+import com.truesensor.app.data.settings.PreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,6 +30,7 @@ class SensorDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val sensorRepository: SensorRepository,
     private val exportRepository: ExportRepository,
+    private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
     private val sensorType: Int = checkNotNull(savedStateHandle["type"])
@@ -35,10 +41,18 @@ class SensorDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SensorDetailUiState())
     val uiState: StateFlow<SensorDetailUiState> = _uiState.asStateFlow()
 
+    val exportFolderUri: StateFlow<String?> = preferencesRepository.userPreferences
+        .map { it.exportFolderUri }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     private var collectionJob: Job? = null
 
     init {
-        startCollecting()
+        viewModelScope.launch {
+            val defaultSpeed = preferencesRepository.userPreferences.first().defaultSamplingSpeed
+            _uiState.update { it.copy(delayOption = defaultSpeed) }
+            startCollecting()
+        }
     }
 
     private fun startCollecting() {

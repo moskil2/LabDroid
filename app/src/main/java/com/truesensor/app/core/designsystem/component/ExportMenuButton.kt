@@ -15,6 +15,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.documentfile.provider.DocumentFile
 import com.truesensor.app.data.export.ExportFormat
 
 @Composable
@@ -25,7 +27,9 @@ fun ExportMenuButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     label: String = "Export",
+    defaultFolderUri: String? = null,
 ) {
+    val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
     var pendingFormat by remember { mutableStateOf<ExportFormat?>(null) }
     val launcher = rememberLauncherForActivityResult(
@@ -52,8 +56,22 @@ fun ExportMenuButton(
                     text = { Text(format.label) },
                     onClick = {
                         showMenu = false
-                        pendingFormat = format
-                        launcher.launch(fileNameFor(format))
+                        val folderUri = defaultFolderUri
+                        if (folderUri != null) {
+                            val newFile = runCatching {
+                                DocumentFile.fromTreeUri(context, Uri.parse(folderUri))
+                                    ?.createFile(format.mimeType, fileNameFor(format))
+                            }.getOrNull()
+                            if (newFile != null) {
+                                onFormatChosen(newFile.uri, format)
+                            } else {
+                                pendingFormat = format
+                                launcher.launch(fileNameFor(format))
+                            }
+                        } else {
+                            pendingFormat = format
+                            launcher.launch(fileNameFor(format))
+                        }
                     },
                 )
             }
