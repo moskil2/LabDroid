@@ -24,21 +24,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.truesensor.app.core.designsystem.component.InfoCard
 import com.truesensor.app.core.navigation.TrueSensorDestination
 
-private data class ShortcutChip(val label: String, val destination: TrueSensorDestination?)
+private data class ShortcutChip(val label: String, val route: String?)
 
 private val shortcutChips = listOf(
-    ShortcutChip("Live Monitor", TrueSensorDestination.MONITOR),
-    ShortcutChip("GPS", null),
+    ShortcutChip("Live Monitor", TrueSensorDestination.MONITOR.route),
+    ShortcutChip("GPS", "gps"),
     ShortcutChip("Cameras", null),
-    ShortcutChip("Battery", TrueSensorDestination.HARDWARE),
-    ShortcutChip("Export", TrueSensorDestination.SETTINGS),
+    ShortcutChip("Battery", TrueSensorDestination.HARDWARE.route),
+    ShortcutChip("Export", TrueSensorDestination.SETTINGS.route),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     contentPadding: PaddingValues,
-    onNavigate: (TrueSensorDestination) -> Unit,
+    onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
@@ -66,7 +66,7 @@ fun DashboardScreen(
                 shortcutChips.forEach { chip ->
                     FilterChip(
                         selected = false,
-                        onClick = { chip.destination?.let(onNavigate) },
+                        onClick = { chip.route?.let(onNavigate) },
                         label = { Text(chip.label) },
                         shape = RoundedCornerShape(16.dp),
                         colors = FilterChipDefaults.filterChipColors(),

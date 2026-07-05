@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.truesensor.app.feature.dashboard.DashboardScreen
+import com.truesensor.app.feature.gps.GpsScreen
 import com.truesensor.app.feature.hardware.HardwareScreen
 import com.truesensor.app.feature.monitor.MonitorScreen
 import com.truesensor.app.feature.sensors.SensorsScreen
@@ -17,6 +18,7 @@ import com.truesensor.app.feature.sensors.detail.SensorDetailScreen
 import com.truesensor.app.feature.settings.SettingsScreen
 
 const val SENSOR_DETAIL_ROUTE = "sensor_detail/{type}"
+private val TAB_ROUTES = TrueSensorDestination.entries.map { it.route }.toSet()
 
 @Composable
 fun TrueSensorNavHost(
@@ -30,11 +32,15 @@ fun TrueSensorNavHost(
         composable(TrueSensorDestination.DASHBOARD.route) {
             DashboardScreen(
                 contentPadding = contentPadding,
-                onNavigate = { destination ->
-                    navController.navigate(destination.route) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                onNavigate = { route ->
+                    if (route in TAB_ROUTES) {
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    } else {
+                        navController.navigate(route)
                     }
                 },
             )
@@ -59,6 +65,9 @@ fun TrueSensorNavHost(
             arguments = listOf(navArgument("type") { type = NavType.IntType }),
         ) {
             SensorDetailScreen(contentPadding = contentPadding)
+        }
+        composable("gps") {
+            GpsScreen(contentPadding = contentPadding)
         }
     }
 }
