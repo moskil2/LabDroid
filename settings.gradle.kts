@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TrueSensor"
+rootProject.name = "LabDroid"
 include(":app")

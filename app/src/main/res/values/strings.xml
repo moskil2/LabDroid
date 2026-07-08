@@ -1,4 +1,386 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TrueSensor</string>
+    <string name="app_name">LabDroid</string>
+
+    <!-- Bottom navigation / destinations -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_sensors">Sensors</string>
+    <string name="nav_hardware">Hardware</string>
+    <string name="nav_monitor">Monitor</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_gps">GPS</string>
+    <string name="nav_cameras">Cameras</string>
+    <string name="nav_battery">Battery</string>
+
+    <!-- Top app bar -->
+    <string name="topbar_menu">Menu</string>
+    <string name="topbar_back">Back</string>
+    <string name="topbar_close">Close</string>
+    <string name="topbar_support_project">Support this project</string>
+    <string name="topbar_language">Language</string>
+
+    <!-- Support dialog -->
+    <string name="support_dialog_title">Support this project</string>
+    <string name="support_dialog_body">LabDroid is completely free, contains no ads, and collects no personal data. If you find it useful, please consider supporting our work.</string>
+    <string name="support_dialog_link">spotrobotics.app</string>
+    <string name="support_dialog_dismiss">Close</string>
+
+    <!-- Language picker -->
+    <string name="language_picker_title">Choose language</string>
+    <string name="language_english">English</string>
+    <string name="language_polish">Polski</string>
+
+    <!-- Drawer -->
+    <string name="drawer_version">Version %1$s</string>
+    <string name="drawer_dark_theme">Dark theme</string>
+    <string name="drawer_created_by">Created by</string>
+    <string name="drawer_author_name">Tomasz Pieczara</string>
+    <string name="drawer_author_site">spotrobotics.app</string>
+    <string name="drawer_close">Close</string>
+    <string name="drawer_privacy_label">Privacy policy (GDPR)</string>
+    <string name="drawer_compatibility_label">Android compatibility</string>
+    <string name="drawer_contact_label">Contact</string>
+    <string name="drawer_contact_email">tomasz.pieczara@gazeta.pl</string>
+    <string name="drawer_privacy_body">Privacy policy — LabDroid %1$s\n\nLabDroid reads data from sensors, location, camera and other hardware components exclusively on your device, only to display it inside the app or to let you export it yourself. No data ever leaves your device automatically: there are no remote servers, no analytics SDKs, no ad networks and no third parties involved.\n\nThe only data that leaves your device is a file you explicitly choose to export or share using your own device\'s share/export function.\n\nBecause no personal data is collected, stored remotely or processed by us, there is no profiling and no cross-app tracking. Since all processing happens locally on your device, you remain fully in control of your data at all times, and uninstalling the app removes everything it has ever produced.\n\nContact for any privacy-related question: tomasz.pieczara@gazeta.pl.</string>
+    <string name="drawer_compatibility_body">LabDroid relies exclusively on official, public Android APIs to read information about sensors, hardware, location, camera and connectivity. All permissions are declared in the app manifest and requested at runtime following Google\'s guidelines.\n\nSupported Android versions: Android 8.0 Oreo (API 26) and newer, up to and including the latest Android 16 (API 36):\n\n• Android 8.0 / 8.1 Oreo (API 26-27)\n• Android 9 Pie (API 28)\n• Android 10 (API 29)\n• Android 11 (API 30)\n• Android 12 / 12L (API 31-32)\n• Android 13 (API 33)\n• Android 14 (API 34)\n• Android 15 (API 35)\n• Android 16 (API 36)\n\nSome hardware-dependent readings (e.g. flash strength levels, battery cycle count) are only available on newer Android versions or specific devices; the app clearly marks such values as unavailable when the platform or hardware does not support them.</string>
+
+    <!-- Settings screen -->
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_units">Units</string>
+    <string name="settings_units_metric">Metric</string>
+    <string name="settings_units_imperial">Imperial</string>
+    <string name="settings_sampling_speed">Default sensor sampling speed</string>
+    <string name="sensor_delay_fast">Fast</string>
+    <string name="sensor_delay_normal">Normal</string>
+    <string name="sensor_delay_slow">Slow</string>
+    <string name="settings_permissions">Permissions</string>
+    <string name="settings_permission_granted">Granted</string>
+    <string name="settings_permission_not_granted">Not granted</string>
+    <string name="permission_location">Location</string>
+    <string name="permission_camera">Camera</string>
+    <string name="permission_body_sensors">Body sensors</string>
+    <string name="permission_bluetooth">Bluetooth</string>
+    <string name="permission_phone_state">Phone state</string>
+    <string name="permission_notifications">Notifications</string>
+    <string name="settings_export_folder">Export folder</string>
+    <string name="settings_export_folder_prompt">Prompt each time</string>
+    <string name="settings_choose_folder">Choose folder</string>
+    <string name="settings_clear_folder">Clear</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_reset_preferences">Reset preferences</string>
+    <string name="settings_reset_confirm_title">Reset preferences?</string>
+    <string name="settings_reset_confirm_body">Theme, units, default sampling speed and export folder will be restored to their defaults.</string>
+    <string name="settings_reset_confirm_action">Reset</string>
+    <string name="settings_cancel">Cancel</string>
+
+    <!-- Common -->
+    <string name="common_yes">Yes</string>
+    <string name="common_no">No</string>
+
+    <!-- Sensor detail screen -->
+    <string name="sensor_detail_unavailable">Sensor not available on this device</string>
+    <string name="sensor_detail_paused">paused</string>
+    <string name="sensor_detail_updating_live">updating live</string>
+    <string name="sensor_detail_live_chart">live chart · last %1$d samples</string>
+    <string name="sensor_detail_collecting_samples">Collecting samples…</string>
+    <string name="sensor_detail_minimum">Minimum</string>
+    <string name="sensor_detail_maximum">Maximum</string>
+    <string name="sensor_detail_average">Average</string>
+    <string name="sensor_detail_std_deviation">Std. deviation</string>
+    <string name="sensor_detail_resume">Resume</string>
+    <string name="sensor_detail_pause">Pause</string>
+    <string name="sensor_detail_reset">Reset</string>
+    <string name="sensor_detail_metadata">Metadata</string>
+    <string name="sensor_detail_vendor">Vendor</string>
+    <string name="sensor_detail_version">Version</string>
+    <string name="sensor_detail_resolution">Resolution</string>
+    <string name="sensor_detail_max_range">Max range</string>
+    <string name="sensor_detail_power">Power</string>
+    <string name="sensor_detail_min_delay">Min delay</string>
+    <string name="sensor_detail_fifo">FIFO</string>
+    <string name="sensor_detail_wake_up">Wake-up</string>
+    <string name="sensor_detail_reporting_mode">Reporting mode</string>
+
+    <!-- Sensor friendly names -->
+    <string name="sensor_name_light">Light sensor</string>
+    <string name="sensor_name_barometer">Barometer</string>
+    <string name="sensor_name_gyroscope">Gyroscope</string>
+    <string name="sensor_name_gyroscope_uncalibrated">Gyroscope (uncalibrated)</string>
+    <string name="sensor_name_orientation">Orientation sensor</string>
+    <string name="sensor_name_magnetometer">Magnetometer</string>
+    <string name="sensor_name_magnetometer_uncalibrated">Magnetometer (uncalibrated)</string>
+    <string name="sensor_name_accelerometer">Accelerometer</string>
+    <string name="sensor_name_accelerometer_uncalibrated">Accelerometer (uncalibrated)</string>
+    <string name="sensor_name_gravity">Gravity sensor</string>
+    <string name="sensor_name_linear_acceleration">Linear acceleration</string>
+    <string name="sensor_name_rotation_vector">Rotation vector</string>
+    <string name="sensor_name_rotation_vector_game">Rotation vector (game)</string>
+    <string name="sensor_name_rotation_vector_geomagnetic">Rotation vector (geomagnetic)</string>
+    <string name="sensor_name_proximity">Proximity sensor</string>
+    <string name="sensor_name_ambient_temperature">Ambient temperature</string>
+    <string name="sensor_name_humidity">Humidity sensor</string>
+    <string name="sensor_name_heart_rate">Heart rate sensor</string>
+    <string name="sensor_name_step_counter">Step counter</string>
+    <string name="sensor_name_step_detector">Step detector</string>
+    <string name="sensor_name_significant_motion">Significant motion</string>
+    <string name="sensor_name_generic">Sensor</string>
+    <string name="sensors_status_ok">ok</string>
+    <string name="sensors_status_waiting">waiting</string>
+
+    <!-- Monitor screen -->
+    <string name="monitor_pinned_sensors">Pinned sensors (%1$d)</string>
+    <string name="monitor_select">Select</string>
+    <string name="monitor_export_recording">Export recording</string>
+    <string name="monitor_no_sensors_pinned">No sensors pinned yet</string>
+    <string name="monitor_stop_recording">Stop recording</string>
+    <string name="monitor_start_recording">Start recording</string>
+    <string name="monitor_remove_sensor">Remove %1$s</string>
+
+    <!-- GPS screen -->
+    <string name="gps_tab_location">Location</string>
+    <string name="gps_tab_compass">Compass</string>
+    <string name="gps_permission_rationale">Location access is needed to show GPS position and compass true-north correction.</string>
+    <string name="gps_grant_permission">Grant location permission</string>
+    <string name="gps_stop_track">Stop Track</string>
+    <string name="gps_start_track">Start Track</string>
+    <string name="gps_export_gpx_csv">Export GPX·CSV</string>
+    <string name="gps_precise_position">Precise position</string>
+    <string name="gps_copy">Copy</string>
+    <string name="gps_latitude">Latitude</string>
+    <string name="gps_longitude">Longitude</string>
+    <string name="gps_altitude">Altitude</string>
+    <string name="gps_speed">Speed</string>
+    <string name="gps_speed_kmh">Speed (km/h)</string>
+    <string name="gps_bearing">Bearing</string>
+    <string name="gps_accuracy_h">Accuracy H</string>
+    <string name="gps_accuracy_v">Accuracy V</string>
+    <string name="gps_satellites">Satellites</string>
+    <string name="gps_provider">Provider</string>
+    <string name="gps_magnetic_true">Magnetic %1$s · True %2$s</string>
+    <string name="gps_field_strength">Field strength</string>
+    <string name="gps_calibration">Calibration</string>
+    <string name="gps_calibration_high">High</string>
+    <string name="gps_calibration_medium">Medium</string>
+    <string name="gps_calibration_low">Low</string>
+    <string name="gps_calibration_unreliable">Unreliable</string>
+    <string name="gps_calibration_unknown">Unknown</string>
+    <string name="gps_satellite_signal">Satellite signal (dB-Hz)</string>
+    <string name="gps_no_satellites">No satellites in view</string>
+    <string name="gps_constellation_legend">G GPS · R GLONASS · E Galileo · C BeiDou · J QZSS · S SBAS · I IRNSS</string>
+
+    <!-- Cameras screen -->
+    <string name="cameras_none_detected">No cameras detected on this device</string>
+    <string name="cameras_sensor">Sensor</string>
+    <string name="cameras_pixel_array">Pixel array</string>
+    <string name="cameras_focal_length">Focal length</string>
+    <string name="cameras_fov">FoV</string>
+    <string name="cameras_zoom">Zoom</string>
+    <string name="cameras_ois">OIS</string>
+    <string name="cameras_flash">Flash</string>
+    <string name="cameras_raw">RAW</string>
+    <string name="cameras_max_fps">Max FPS</string>
+    <string name="cameras_logical_multi_camera">Logical multi-camera</string>
+    <string name="common_supported">Supported</string>
+    <string name="common_not_supported">Not supported</string>
+    <string name="cameras_unknown">Unknown</string>
+    <string name="cameras_facing_front">Front</string>
+    <string name="cameras_facing_back">Back</string>
+    <string name="cameras_facing_external">External</string>
+    <string name="cameras_camera_number">Camera %1$d</string>
+    <string name="cameras_lens_standard">Standard</string>
+    <string name="cameras_lens_ultra_wide">Ultra-wide</string>
+    <string name="cameras_lens_telephoto">Telephoto</string>
+    <string name="cameras_lens_macro">Macro</string>
+    <string name="cameras_lens_wide">Wide</string>
+
+    <!-- Search screen -->
+    <string name="search_placeholder">Search sensors, hardware, settings</string>
+    <string name="search_no_results">No results</string>
+    <string name="search_category_sensor">Sensor</string>
+    <string name="search_category_hardware">Hardware</string>
+    <string name="search_category_settings">Settings</string>
+    <string name="search_entry_cpu">CPU</string>
+    <string name="search_entry_gpu">GPU</string>
+    <string name="search_entry_memory">Memory</string>
+    <string name="search_entry_storage">Storage</string>
+    <string name="search_entry_battery">Battery</string>
+    <string name="search_entry_display">Display</string>
+    <string name="search_entry_audio">Audio</string>
+    <string name="search_entry_connectivity">Connectivity</string>
+
+    <!-- Common (additional) -->
+    <string name="common_unavailable">Unavailable</string>
+    <string name="common_loading">Loading…</string>
+
+    <!-- Battery screen -->
+    <string name="battery_section_battery">Battery</string>
+    <string name="battery_section_electrical">Electrical</string>
+    <string name="battery_level">Level</string>
+    <string name="battery_status">Status</string>
+    <string name="battery_charging">Charging</string>
+    <string name="battery_not_charging">Not charging</string>
+    <string name="battery_charging_source">Charging source</string>
+    <string name="battery_health">Health</string>
+    <string name="battery_present">Present</string>
+    <string name="battery_technology">Technology</string>
+    <string name="battery_temperature">Temperature</string>
+    <string name="battery_voltage">Voltage</string>
+    <string name="battery_current_now">Current now</string>
+    <string name="battery_remaining_charge">Remaining charge</string>
+    <string name="battery_design_capacity">Design capacity</string>
+    <string name="battery_cycle_count">Cycle count</string>
+    <string name="battery_source_ac">AC charger</string>
+    <string name="battery_source_usb">USB</string>
+    <string name="battery_source_wireless">Wireless</string>
+    <string name="battery_source_unknown">Unknown source</string>
+    <string name="battery_source_not_plugged_in">Not plugged in</string>
+    <string name="battery_health_good">Good</string>
+    <string name="battery_health_overheat">Overheat</string>
+    <string name="battery_health_dead">Dead</string>
+    <string name="battery_health_over_voltage">Over voltage</string>
+    <string name="battery_health_unspecified_failure">Unspecified failure</string>
+    <string name="battery_health_cold">Cold</string>
+    <string name="battery_health_unknown">Unknown</string>
+
+    <!-- Connectivity -->
+    <string name="connectivity_permission_required">Permission required</string>
+    <string name="connectivity_no_connection">No connection</string>
+    <string name="connectivity_wifi">Wi-Fi</string>
+    <string name="connectivity_cellular">Cellular</string>
+    <string name="connectivity_ethernet">Ethernet</string>
+    <string name="connectivity_vpn">VPN</string>
+    <string name="connectivity_connected">Connected</string>
+    <string name="connectivity_unknown_band">Unknown band</string>
+    <string name="connectivity_sim_absent">No SIM</string>
+    <string name="connectivity_sim_ready">Ready</string>
+    <string name="connectivity_sim_pin_required">PIN required</string>
+    <string name="connectivity_sim_puk_required">PUK required</string>
+    <string name="connectivity_sim_network_locked">Network locked</string>
+    <string name="connectivity_sim_not_ready">Not ready</string>
+    <string name="connectivity_available">Available</string>
+    <string name="connectivity_unavailable">Unavailable</string>
+
+    <!-- Hardware screen -->
+    <string name="hardware_section_cpu">CPU</string>
+    <string name="hardware_cores">Cores</string>
+    <string name="hardware_core_clusters">Core clusters</string>
+    <string name="hardware_abi">ABI</string>
+    <string name="hardware_max_frequency">Max frequency</string>
+    <string name="hardware_platform">Hardware platform</string>
+    <string name="hardware_soc">SoC</string>
+    <string name="hardware_section_gpu">GPU</string>
+    <string name="hardware_renderer">Renderer</string>
+    <string name="hardware_vendor">Vendor</string>
+    <string name="hardware_gl_version">GL version</string>
+    <string name="hardware_egl_version">EGL version</string>
+    <string name="hardware_gl_extensions">GL extensions</string>
+    <string name="hardware_extensions_count">%1$d supported</string>
+    <string name="hardware_vulkan">Vulkan</string>
+    <string name="hardware_section_memory">Memory</string>
+    <string name="hardware_total">Total</string>
+    <string name="hardware_available">Available</string>
+    <string name="hardware_available_kernel">Available (kernel)</string>
+    <string name="hardware_low_memory_threshold">Low-memory threshold</string>
+    <string name="hardware_low_memory_state">Low memory state</string>
+    <string name="hardware_swap_total">Swap total</string>
+    <string name="hardware_section_storage">Storage</string>
+    <string name="hardware_free">Free</string>
+    <string name="hardware_section_battery">Battery</string>
+    <string name="hardware_section_display">Display</string>
+    <string name="hardware_resolution">Resolution</string>
+    <string name="hardware_density">Density</string>
+    <string name="hardware_refresh_rate">Refresh rate</string>
+    <string name="hardware_hdr">HDR</string>
+    <string name="hardware_section_flashlight">Flashlight</string>
+    <string name="hardware_available_flag">Available</string>
+    <string name="hardware_max_strength_level">Max strength level</string>
+    <string name="hardware_default_strength_level">Default strength level</string>
+    <string name="hardware_section_audio">Audio</string>
+    <string name="hardware_output_devices">Output devices</string>
+    <string name="hardware_input_devices">Input devices</string>
+    <string name="hardware_output_sample_rate">Output sample rate</string>
+    <string name="hardware_frames_per_buffer">Frames per buffer</string>
+    <string name="hardware_low_latency_audio">Low-latency audio</string>
+    <string name="hardware_pro_audio">Pro audio</string>
+    <string name="hardware_none">None</string>
+    <string name="hardware_section_connectivity">Connectivity</string>
+    <string name="hardware_active_connection">Active connection</string>
+    <string name="hardware_metered">Metered</string>
+    <string name="hardware_internet_validated">Internet validated</string>
+    <string name="hardware_wifi_ssid">Wi-Fi SSID</string>
+    <string name="hardware_wifi_signal">Wi-Fi signal</string>
+    <string name="hardware_wifi_frequency">Wi-Fi frequency</string>
+    <string name="hardware_wifi_link_speed">Wi-Fi link speed</string>
+    <string name="hardware_wifi_standard">Wi-Fi standard</string>
+    <string name="hardware_cellular_operator">Cellular operator</string>
+    <string name="hardware_cellular_generation">Cellular generation</string>
+    <string name="hardware_cellular_roaming">Cellular roaming</string>
+    <string name="hardware_sim_state">SIM state</string>
+    <string name="hardware_bluetooth">Bluetooth</string>
+    <string name="hardware_bluetooth_adapter">Bluetooth adapter</string>
+    <string name="hardware_bluetooth_enabled">Bluetooth enabled</string>
+    <string name="hardware_paired_devices">Paired devices</string>
+    <string name="hardware_nfc">NFC</string>
+
+    <!-- Dashboard screen -->
+    <string name="dashboard_device_model">Device model</string>
+    <string name="dashboard_manufacturer">Manufacturer</string>
+    <string name="dashboard_android_version">Android version</string>
+    <string name="dashboard_android_codename">Android codename</string>
+    <string name="dashboard_security_patch">Security patch</string>
+    <string name="dashboard_kernel">Kernel</string>
+    <string name="dashboard_build_number">Build number</string>
+    <string name="dashboard_cpu_architecture">CPU architecture</string>
+    <string name="dashboard_ram">RAM</string>
+    <string name="dashboard_storage">Storage</string>
+    <string name="dashboard_battery">Battery</string>
+    <string name="dashboard_charging">Charging</string>
+    <string name="dashboard_gps">GPS</string>
+    <string name="dashboard_sensors">Sensors</string>
+    <string name="dashboard_cameras">Cameras</string>
+    <string name="dashboard_connectivity">Connectivity</string>
+    <string name="dashboard_count_available">%1$d available</string>
+    <string name="common_grant">Grant</string>
+    <string name="common_export">Export</string>
+
+    <!-- Audio device labels -->
+    <string name="audio_device_builtin_speaker">Built-in speaker</string>
+    <string name="audio_device_earpiece">Earpiece</string>
+    <string name="audio_device_builtin_mic">Built-in mic</string>
+    <string name="audio_device_wired_headset">Wired headset</string>
+    <string name="audio_device_wired_headphones">Wired headphones</string>
+    <string name="audio_device_bluetooth_sco">Bluetooth SCO</string>
+    <string name="audio_device_bluetooth_a2dp">Bluetooth A2DP</string>
+    <string name="audio_device_usb_device">USB device</string>
+    <string name="audio_device_usb_headset">USB headset</string>
+    <string name="audio_device_usb_accessory">USB accessory</string>
+    <string name="audio_device_hdmi">HDMI</string>
+    <string name="audio_device_hdmi_arc">HDMI ARC</string>
+    <string name="audio_device_telephony">Telephony</string>
+    <string name="audio_device_dock">Dock</string>
+    <string name="audio_device_fm">FM</string>
+    <string name="audio_device_fm_tuner">FM tuner</string>
+    <string name="audio_device_builtin_speaker_safe">Built-in speaker (safe)</string>
+    <string name="audio_device_line_analog">Line (analog)</string>
+    <string name="audio_device_line_digital">Line (digital)</string>
+    <string name="audio_device_type_generic">Type %1$d</string>
+
+    <!-- Sensor reporting mode -->
+    <string name="sensor_reporting_continuous">Continuous</string>
+    <string name="sensor_reporting_on_change">On change</string>
+    <string name="sensor_reporting_one_shot">One-shot</string>
+    <string name="sensor_reporting_special_trigger">Special trigger</string>
+
+    <!-- Sound level (microphone-based pseudo-sensor) -->
+    <string name="sensor_sound_level_name">Sound level</string>
+    <string name="sensor_sound_level_subtitle">Microphone</string>
+    <string name="sound_permission_rationale">Microphone access is needed to measure the ambient sound level.</string>
+    <string name="sound_grant_permission">Grant microphone permission</string>
+    <string name="sound_metadata_source">Source</string>
+    <string name="sound_metadata_source_value">Microphone</string>
+    <string name="sound_metadata_sample_rate">Sample rate</string>
+    <string name="sound_metadata_note">Note</string>
+    <string name="sound_metadata_note_value">Relative level derived from the microphone signal, not a calibrated SPL reading</string>
 </resources>
