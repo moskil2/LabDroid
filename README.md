@@ -27,7 +27,7 @@
     <td><img src="screenshots/05_Cameras.jpg" width="140" alt="Cameras screen with per-camera specifications" /></td>
     <td><img src="screenshots/06_Battery.jpg" width="140" alt="Battery screen with level, health, voltage and capacity" /></td>
     <td><img src="screenshots/07_Settings.jpg" width="140" alt="Settings screen with theme, units, sampling speed and permissions" /></td>
-    <td></td>
+    <td><img src="screenshots/08_GPS_Radar.jpg" width="140" alt="GPS satellite radar with signal strength per satellite" /></td>
   </tr>
 </table>
 
@@ -36,7 +36,6 @@
 - Package: `com.labdroid.app`
 - Minimum Android version: 8.0 Oreo (API 26), targets Android 16 (API 36)
 - Languages: English, Polish
-- Author: Tomasz Pieczara ([spotrobotics.app](https://spotrobotics.app))
 
 ## Features
 
