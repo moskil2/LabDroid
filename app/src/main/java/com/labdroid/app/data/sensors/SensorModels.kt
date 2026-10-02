@@ -28,8 +28,8 @@ data class SensorReading(val values: FloatArray, val accuracy: Int, val timestam
 
 enum class SensorDelayOption(@StringRes val labelRes: Int, val periodUs: Int) {
     FAST(R.string.sensor_delay_fast, SensorManager.SENSOR_DELAY_FASTEST),
-    NORMAL(R.string.sensor_delay_normal, SensorManager.SENSOR_DELAY_GAME),
-    SLOW(R.string.sensor_delay_slow, SensorManager.SENSOR_DELAY_NORMAL),
+    NORMAL(R.string.sensor_delay_normal, 100_000), // 10 updates/sec — 5x slower than before, easier to read
+    SLOW(R.string.sensor_delay_slow, 1_000_000), // 1 update/sec — same proportional gap to NORMAL as before
 }
 
 fun representativeValue(values: FloatArray): Float = when (values.size) {
@@ -37,6 +37,15 @@ fun representativeValue(values: FloatArray): Float = when (values.size) {
     1 -> values[0]
     else -> sqrt(values.sumOf { (it * it).toDouble() }).toFloat()
 }
+
+/**
+ * Per the Android API contract, only values[0] is defined for [Sensor.TYPE_PROXIMITY] (distance in
+ * cm). Some OEMs (e.g. Samsung's "Palm Proximity" gesture sensor) expose extra, unrelated values
+ * in values[1]/values[2] under this same standard type — treating those as vector components (as
+ * [representativeValue] does for every other multi-axis sensor) produces a meaningless magnitude.
+ */
+fun sensorValue(type: Int, values: FloatArray): Float =
+    if (type == Sensor.TYPE_PROXIMITY) values.getOrElse(0) { 0f } else representativeValue(values)
 
 private val priorityOrder = listOf(
     Sensor.TYPE_LIGHT,
@@ -50,7 +59,28 @@ private val priorityOrder = listOf(
     Sensor.TYPE_ROTATION_VECTOR,
 )
 
-fun sensorPriority(type: Int): Int = priorityOrder.indexOf(type).let { if (it == -1) priorityOrder.size else it }
+/** Maps each "raw" sensor type to the canonical (corrected) type it is a variant of, so pairs sort together. */
+private val rawVariantOf = mapOf(
+    Sensor.TYPE_GYROSCOPE_UNCALIBRATED to Sensor.TYPE_GYROSCOPE,
+    Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED to Sensor.TYPE_MAGNETIC_FIELD,
+    Sensor.TYPE_ACCELEROMETER_UNCALIBRATED to Sensor.TYPE_ACCELEROMETER,
+)
+
+fun isRawVariant(type: Int): Boolean = type in rawVariantOf
+
+/** Raw sensor types whose detail screen shows separate X/Y/Z values and a 3-line chart. */
+private val axisViewTypes = setOf(
+    Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED,
+    Sensor.TYPE_ACCELEROMETER_UNCALIBRATED,
+    Sensor.TYPE_GYROSCOPE_UNCALIBRATED,
+)
+
+fun hasAxisView(type: Int): Boolean = type in axisViewTypes
+
+fun sensorPriority(type: Int): Int {
+    val canonicalType = rawVariantOf[type] ?: type
+    return priorityOrder.indexOf(canonicalType).let { if (it == -1) priorityOrder.size else it }
+}
 
 /**
  * Types this app can name and interpret. Anything outside this set is almost always an
@@ -78,8 +108,6 @@ private val knownSensorTypes = setOf(
     Sensor.TYPE_RELATIVE_HUMIDITY,
     Sensor.TYPE_HEART_RATE,
     Sensor.TYPE_STEP_COUNTER,
-    Sensor.TYPE_STEP_DETECTOR,
-    Sensor.TYPE_SIGNIFICANT_MOTION,
 )
 
 fun isKnownSensorType(type: Int): Boolean = type in knownSensorTypes
@@ -105,13 +133,11 @@ fun friendlyNameResFor(type: Int): Int = when (type) {
     Sensor.TYPE_RELATIVE_HUMIDITY -> R.string.sensor_name_humidity
     Sensor.TYPE_HEART_RATE -> R.string.sensor_name_heart_rate
     Sensor.TYPE_STEP_COUNTER -> R.string.sensor_name_step_counter
-    Sensor.TYPE_STEP_DETECTOR -> R.string.sensor_name_step_detector
-    Sensor.TYPE_SIGNIFICANT_MOTION -> R.string.sensor_name_significant_motion
     else -> R.string.sensor_name_generic
 }
 
 fun unitFor(type: Int): String = when (type) {
-    Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_LINEAR_ACCELERATION, Sensor.TYPE_GRAVITY -> "m/s²"
+    Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_ACCELEROMETER_UNCALIBRATED, Sensor.TYPE_LINEAR_ACCELERATION, Sensor.TYPE_GRAVITY -> "m/s²"
     Sensor.TYPE_GYROSCOPE, Sensor.TYPE_GYROSCOPE_UNCALIBRATED -> "rad/s"
     Sensor.TYPE_MAGNETIC_FIELD, Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED -> "μT"
     Sensor.TYPE_LIGHT -> "lx"

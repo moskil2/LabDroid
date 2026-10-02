@@ -15,7 +15,7 @@ import javax.inject.Inject
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
 data class UserPreferences(
-    val themeMode: ThemeMode = ThemeMode.LIGHT,
+    val themeMode: ThemeMode = ThemeMode.DARK,
     val useImperialUnits: Boolean = false,
     val defaultSamplingSpeed: SensorDelayOption = SensorDelayOption.NORMAL,
     val exportFolderUri: String? = null,
@@ -34,7 +34,7 @@ class PreferencesRepository @Inject constructor(@ApplicationContext private val 
         UserPreferences(
             themeMode = prefs[Keys.THEME_MODE]
                 ?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
-                ?: ThemeMode.LIGHT,
+                ?: ThemeMode.DARK,
             useImperialUnits = prefs[Keys.USE_IMPERIAL_UNITS] ?: false,
             defaultSamplingSpeed = prefs[Keys.DEFAULT_SAMPLING_SPEED]
                 ?.let { runCatching { SensorDelayOption.valueOf(it) }.getOrNull() }

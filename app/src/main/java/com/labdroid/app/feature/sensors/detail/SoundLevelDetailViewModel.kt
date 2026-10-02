@@ -21,10 +21,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val FAST_POLL_INTERVAL_MS = 50L
+
 private fun SensorDelayOption.toAudioIntervalMs(): Long = when (this) {
     SensorDelayOption.FAST -> 50L
-    SensorDelayOption.NORMAL -> 150L
-    SensorDelayOption.SLOW -> 400L
+    SensorDelayOption.NORMAL -> 750L
+    SensorDelayOption.SLOW -> 2000L
 }
 
 @HiltViewModel
@@ -44,21 +46,32 @@ class SoundLevelDetailViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private var collectionJob: Job? = null
+    private var lastAcceptedAtMillis = 0L
 
     init {
         startCollecting()
     }
 
     fun restartCollecting() {
+        collectionJob?.cancel()
         startCollecting()
     }
 
+    /**
+     * Polls the microphone at a fixed fast rate and only *accepts* samples per the selected
+     * Fast/Normal/Slow throttle in [onSample]'s caller below — so [selectDelay] never needs to
+     * tear down and recreate the AudioRecord, which is what previously let rapid switching
+     * double-count samples during the brief teardown/recreate window.
+     */
     private fun startCollecting() {
-        collectionJob?.cancel()
         collectionJob = viewModelScope.launch {
-            soundLevelRepository.observeDecibels(_uiState.value.delayOption.toAudioIntervalMs()).collect { db ->
+            soundLevelRepository.observeDecibels(FAST_POLL_INTERVAL_MS).collect { db ->
                 if (_uiState.value.isPaused) return@collect
-                onSample(System.currentTimeMillis(), db)
+                val now = System.currentTimeMillis()
+                val minIntervalMs = _uiState.value.delayOption.toAudioIntervalMs()
+                if (now - lastAcceptedAtMillis < minIntervalMs) return@collect
+                lastAcceptedAtMillis = now
+                onSample(now, db)
             }
         }
     }
@@ -83,7 +96,6 @@ class SoundLevelDetailViewModel @Inject constructor(
 
     fun selectDelay(option: SensorDelayOption) {
         _uiState.update { it.copy(delayOption = option) }
-        startCollecting()
     }
 
     fun togglePause() {
@@ -91,6 +103,7 @@ class SoundLevelDetailViewModel @Inject constructor(
     }
 
     fun reset() {
+        lastAcceptedAtMillis = 0L
         history.clear()
         _uiState.update {
             it.copy(

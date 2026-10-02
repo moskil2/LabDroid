@@ -34,6 +34,18 @@
     <string name="drawer_version">Wersja %1$s</string>
     <string name="drawer_dark_theme">Ciemny motyw</string>
     <string name="drawer_created_by">Autor</string>
+    <string name="drawer_created_by_line">Stworzone przez: %1$s</string>
+    <string name="drawer_version_label">Wersja</string>
+    <string name="drawer_build_label">Build</string>
+    <string name="drawer_website_label">Strona</string>
+    <string name="drawer_github_label">GitHub</string>
+    <string name="drawer_terms_label">Warunki korzystania</string>
+    <string name="drawer_terms_body">LabDroid to program hobbystyczny dla osób, które chcą zobaczyć, co raportują czujniki i podzespoły ich telefonu. Aplikacja wyłącznie odczytuje i wyświetla dane udostępniane przez system Android oraz pozwala Ci je samodzielnie eksportować - nie zmienia żadnych ustawień systemu ani sprzętu. Odczyty zależą od urządzenia i jego czujników i mogą być niedokładne, niepełne lub niedostępne, dlatego nie polegaj na nich tam, gdzie precyzyjny pomiar ma znaczenie dla bezpieczeństwa, zdrowia albo decyzji prawnych lub finansowych. Korzystając z aplikacji ponosisz pełną odpowiedzialność za sposób jej używania. Aplikacja dostarczana jest \"tak jak jest\", bez żadnej gwarancji nieprzerwanego i niezawodnego działania. Twórca nie ponosi żadnej odpowiedzialności za szkody wynikłe z używania aplikacji - używasz jej na własną odpowiedzialność.</string>
+    <string name="drawer_support_label">Kontakt / Zgłoś błąd / Propozycja funkcji</string>
+    <string name="drawer_support_body">Znalazłeś błąd? Masz pomysł na nową funkcję? Chcesz się po prostu przywitać? Wypełnij krótki formularz - każda wiadomość jest czytana osobiście.</string>
+    <string name="drawer_support_link">Otwórz formularz zgłoszeniowy →</string>
+    <string name="drawer_copyright_label">Prawa autorskie</string>
+    <string name="drawer_copyright_body">© 2026 Tomasz Pieczara. Wszelkie prawa zastrzeżone. Kod źródłowy, zasoby i dokumentacja tej aplikacji są własnością twórcy. Kopiowanie, modyfikowanie, redystrybucja lub sprzedaż całości lub części kodu, w postaci źródłowej lub skompilowanej, bez pisemnej zgody twórcy jest zabronione. Repozytorium na GitHubie jest udostępnione wyłącznie do wglądu - forkowanie lub kopiowanie kodu nie daje żadnych praw do jego wykorzystania. Aplikacja (APK) jest dystrybuowana wyłącznie przez oficjalne repozytorium LabDroid na GitHubie.</string>
     <string name="drawer_author_name">Tomasz Pieczara</string>
     <string name="drawer_author_site">spotrobotics.app</string>
     <string name="drawer_close">Zamknij</string>
@@ -41,7 +53,7 @@
     <string name="drawer_compatibility_label">Zgodność z Android</string>
     <string name="drawer_contact_label">Kontakt</string>
     <string name="drawer_contact_email">tomasz.pieczara@gazeta.pl</string>
-    <string name="drawer_privacy_body">Polityka prywatności — LabDroid %1$s\n\nLabDroid odczytuje dane z czujników, lokalizacji, aparatu i innych podzespołów wyłącznie lokalnie, na potrzeby wyświetlenia ich w aplikacji oraz eksportu inicjowanego przez użytkownika. Żadne dane nie opuszczają automatycznie Twojego urządzenia: nie ma zdalnych serwerów, SDK analitycznych, sieci reklamowych ani żadnych podmiotów trzecich.\n\nJedyne dane, które opuszczają urządzenie, to plik, który sam świadomie eksportujesz lub udostępniasz za pomocą funkcji udostępniania/eksportu Twojego urządzenia.\n\nPonieważ nie zbieramy, nie przechowujemy zdalnie ani nie przetwarzamy żadnych danych osobowych, nie ma tu profilowania ani śledzenia między aplikacjami. Ponieważ całe przetwarzanie odbywa się lokalnie na Twoim urządzeniu, zawsze masz pełną kontrolę nad swoimi danymi, a odinstalowanie aplikacji usuwa wszystko, co kiedykolwiek wygenerowała.\n\nKontakt w sprawach związanych z prywatnością: tomasz.pieczara@gazeta.pl.</string>
+    <string name="drawer_privacy_body">Polityka prywatności - LabDroid %1$s\n\nLabDroid odczytuje dane z czujników, lokalizacji, aparatu i innych podzespołów wyłącznie lokalnie, na potrzeby wyświetlenia ich w aplikacji oraz eksportu inicjowanego przez użytkownika. Żadne dane nie opuszczają automatycznie Twojego urządzenia: nie ma zdalnych serwerów, SDK analitycznych, sieci reklamowych ani żadnych podmiotów trzecich.\n\nJedyne dane, które opuszczają urządzenie, to plik, który sam świadomie eksportujesz lub udostępniasz za pomocą funkcji udostępniania/eksportu Twojego urządzenia.\n\nPonieważ nie zbieramy, nie przechowujemy zdalnie ani nie przetwarzamy żadnych danych osobowych, nie ma tu profilowania ani śledzenia między aplikacjami. Ponieważ całe przetwarzanie odbywa się lokalnie na Twoim urządzeniu, zawsze masz pełną kontrolę nad swoimi danymi, a odinstalowanie aplikacji usuwa wszystko, co kiedykolwiek wygenerowała.\n\nKontakt w sprawach związanych z prywatnością: tomasz.pieczara@gazeta.pl.</string>
     <string name="drawer_compatibility_body">LabDroid korzysta wyłącznie z oficjalnych, publicznych API systemu Android do odczytu informacji o czujnikach, sprzęcie, lokalizacji, aparacie i łączności. Wszystkie uprawnienia są deklarowane w manifeście aplikacji i wymagane w czasie działania zgodnie z wytycznymi Google.\n\nObsługiwane wersje Android: Android 8.0 Oreo (API 26) i nowsze, aż po najnowszy Android 16 (API 36):\n\n• Android 8.0 / 8.1 Oreo (API 26-27)\n• Android 9 Pie (API 28)\n• Android 10 (API 29)\n• Android 11 (API 30)\n• Android 12 / 12L (API 31-32)\n• Android 13 (API 33)\n• Android 14 (API 34)\n• Android 15 (API 35)\n• Android 16 (API 36)\n\nNiektóre odczyty zależne od sprzętu (np. poziomy mocy lampy błyskowej, liczba cykli baterii) są dostępne tylko na nowszych wersjach Android lub konkretnych urządzeniach; aplikacja wyraźnie oznacza takie wartości jako niedostępne, gdy platforma lub sprzęt ich nie obsługuje.</string>
 
     <!-- Settings screen -->
@@ -61,6 +73,7 @@
     <string name="permission_location">Lokalizacja</string>
     <string name="permission_camera">Aparat</string>
     <string name="permission_body_sensors">Czujniki ciała</string>
+    <string name="permission_activity_recognition">Aktywność fizyczna (kroki)</string>
     <string name="permission_bluetooth">Bluetooth</string>
     <string name="permission_phone_state">Stan telefonu</string>
     <string name="permission_notifications">Powiadomienia</string>
@@ -106,13 +119,13 @@
     <!-- Sensor friendly names -->
     <string name="sensor_name_light">Czujnik światła</string>
     <string name="sensor_name_barometer">Barometr</string>
-    <string name="sensor_name_gyroscope">Żyroskop</string>
-    <string name="sensor_name_gyroscope_uncalibrated">Żyroskop (niekalibrowany)</string>
+    <string name="sensor_name_gyroscope">Żyroskop (korygowany)</string>
+    <string name="sensor_name_gyroscope_uncalibrated">Żyroskop (realny)</string>
     <string name="sensor_name_orientation">Czujnik orientacji</string>
-    <string name="sensor_name_magnetometer">Magnetometr</string>
-    <string name="sensor_name_magnetometer_uncalibrated">Magnetometr (niekalibrowany)</string>
-    <string name="sensor_name_accelerometer">Akcelerometr</string>
-    <string name="sensor_name_accelerometer_uncalibrated">Akcelerometr (niekalibrowany)</string>
+    <string name="sensor_name_magnetometer">Magnetometr (korygowany)</string>
+    <string name="sensor_name_magnetometer_uncalibrated">Magnetometr (realny)</string>
+    <string name="sensor_name_accelerometer">Akcelerometr (korygowany)</string>
+    <string name="sensor_name_accelerometer_uncalibrated">Akcelerometr (realny)</string>
     <string name="sensor_name_gravity">Czujnik grawitacji</string>
     <string name="sensor_name_linear_acceleration">Przyspieszenie liniowe</string>
     <string name="sensor_name_rotation_vector">Wektor obrotu</string>
@@ -123,8 +136,6 @@
     <string name="sensor_name_humidity">Czujnik wilgotności</string>
     <string name="sensor_name_heart_rate">Czujnik tętna</string>
     <string name="sensor_name_step_counter">Krokomierz</string>
-    <string name="sensor_name_step_detector">Detektor kroków</string>
-    <string name="sensor_name_significant_motion">Istotny ruch</string>
     <string name="sensor_name_generic">Czujnik</string>
     <string name="sensors_status_ok">ok</string>
     <string name="sensors_status_waiting">oczekuje</string>
@@ -261,6 +272,11 @@
     <string name="connectivity_sim_not_ready">Niegotowa</string>
     <string name="connectivity_available">Dostępne</string>
     <string name="connectivity_unavailable">Niedostępne</string>
+    <string name="connectivity_signal_level">poziom %1$d/4</string>
+    <string name="connectivity_data_connected">Połączone</string>
+    <string name="connectivity_data_connecting">Łączenie…</string>
+    <string name="connectivity_data_disconnected">Rozłączone</string>
+    <string name="connectivity_data_suspended">Zawieszone</string>
 
     <!-- Hardware screen -->
     <string name="hardware_section_cpu">CPU</string>
@@ -274,24 +290,41 @@
     <string name="hardware_renderer">Renderer</string>
     <string name="hardware_vendor">Producent</string>
     <string name="hardware_gl_version">Wersja GL</string>
+    <string name="hardware_glsl_version">Wersja GLSL</string>
     <string name="hardware_egl_version">Wersja EGL</string>
     <string name="hardware_gl_extensions">Rozszerzenia GL</string>
     <string name="hardware_extensions_count">%1$d obsługiwanych</string>
+    <string name="hardware_max_texture_size">Maks. rozmiar tekstury</string>
+    <string name="hardware_max_viewport_dims">Maks. rozmiar viewportu</string>
     <string name="hardware_vulkan">Vulkan</string>
-    <string name="hardware_section_memory">Pamięć</string>
+    <string name="hardware_vulkan_hardware_level">Poziom sprzętowy Vulkan</string>
+    <string name="hardware_vulkan_compute">Vulkan compute</string>
+    <string name="hardware_section_memory">Pamięć RAM</string>
     <string name="hardware_total">Całkowita</string>
     <string name="hardware_available">Dostępna</string>
     <string name="hardware_available_kernel">Dostępna (jądro)</string>
     <string name="hardware_low_memory_threshold">Próg niskiej pamięci</string>
     <string name="hardware_low_memory_state">Stan niskiej pamięci</string>
     <string name="hardware_swap_total">Swap całkowity</string>
+    <string name="hardware_swap_free">Swap wolny</string>
+    <string name="hardware_cached">Cache stron</string>
+    <string name="hardware_buffers">Bufory</string>
+    <string name="hardware_memory_class">Limit pamięci na aplikację</string>
+    <string name="hardware_large_memory_class">Limit pamięci na aplikację (largeHeap)</string>
+    <string name="hardware_low_ram_device">Urządzenie low-RAM</string>
     <string name="hardware_section_storage">Dysk</string>
     <string name="hardware_free">Wolne</string>
+    <string name="hardware_used">Zajęte</string>
+    <string name="hardware_storage_removable">Nośnik wymienny %1$d</string>
     <string name="hardware_section_battery">Bateria</string>
     <string name="hardware_section_display">Ekran</string>
     <string name="hardware_resolution">Rozdzielczość</string>
     <string name="hardware_density">Gęstość</string>
     <string name="hardware_refresh_rate">Częstotliwość odświeżania</string>
+    <string name="hardware_density_dpi">Gęstość</string>
+    <string name="hardware_diagonal_size">Przekątna ekranu</string>
+    <string name="hardware_supported_refresh_rates">Obsługiwane częstotliwości</string>
+    <string name="hardware_wide_color_gamut">Szeroka gama kolorów</string>
     <string name="hardware_hdr">HDR</string>
     <string name="hardware_section_flashlight">Latarka</string>
     <string name="hardware_available_flag">Dostępna</string>
@@ -305,23 +338,35 @@
     <string name="hardware_low_latency_audio">Audio niskich opóźnień</string>
     <string name="hardware_pro_audio">Audio pro</string>
     <string name="hardware_none">Brak</string>
-    <string name="hardware_section_connectivity">Łączność</string>
+    <string name="hardware_section_network">Sieć</string>
     <string name="hardware_active_connection">Aktywne połączenie</string>
     <string name="hardware_metered">Mierzone</string>
     <string name="hardware_internet_validated">Internet zweryfikowany</string>
+    <string name="hardware_section_wifi">Wi-Fi</string>
     <string name="hardware_wifi_ssid">SSID Wi-Fi</string>
     <string name="hardware_wifi_signal">Sygnał Wi-Fi</string>
     <string name="hardware_wifi_frequency">Częstotliwość Wi-Fi</string>
     <string name="hardware_wifi_link_speed">Prędkość łącza Wi-Fi</string>
     <string name="hardware_wifi_standard">Standard Wi-Fi</string>
+    <string name="hardware_section_cellular">Sieć komórkowa (GSM)</string>
     <string name="hardware_cellular_operator">Operator komórkowy</string>
+    <string name="hardware_cellular_mcc_mnc">Kod operatora (MCC/MNC)</string>
     <string name="hardware_cellular_generation">Generacja sieci komórkowej</string>
+    <string name="hardware_cellular_signal">Siła sygnału</string>
+    <string name="hardware_cellular_data_state">Połączenie danych</string>
     <string name="hardware_cellular_roaming">Roaming komórkowy</string>
+    <string name="hardware_cellular_country">Kraj sieci</string>
     <string name="hardware_sim_state">Stan karty SIM</string>
+    <string name="hardware_section_bluetooth">Bluetooth</string>
     <string name="hardware_bluetooth">Bluetooth</string>
     <string name="hardware_bluetooth_adapter">Adapter Bluetooth</string>
     <string name="hardware_bluetooth_enabled">Bluetooth włączony</string>
     <string name="hardware_paired_devices">Sparowane urządzenia</string>
+    <string name="hardware_paired_device_names">Nazwy sparowanych urządzeń</string>
+    <string name="hardware_bluetooth_le">Bluetooth LE</string>
+    <string name="hardware_bluetooth_le_audio">LE Audio</string>
+    <string name="hardware_bluetooth_multi_advertisement">Wielokrotne rozgłaszanie BLE</string>
+    <string name="hardware_section_nfc">NFC</string>
     <string name="hardware_nfc">NFC</string>
 
     <!-- Dashboard screen -->
@@ -383,4 +428,14 @@
     <string name="sound_metadata_sample_rate">Częstotliwość próbkowania</string>
     <string name="sound_metadata_note">Uwaga</string>
     <string name="sound_metadata_note_value">Wartość względna wyliczona z sygnału mikrofonu, nie skalibrowany pomiar SPL</string>
+
+    <!-- Sygnał GSM (pseudo-czujnik komórkowy) -->
+    <string name="sensor_gsm_signal_name">Sygnał GSM</string>
+    <string name="sensor_gsm_signal_subtitle">Sieć komórkowa</string>
+    <string name="gsm_signal_permission_rationale">Dostęp do stanu telefonu jest potrzebny do odczytu siły sygnału komórkowego na żywo.</string>
+    <string name="gsm_signal_grant_permission">Przyznaj uprawnienie stanu telefonu</string>
+    <string name="gsm_signal_metadata_source">Źródło</string>
+    <string name="gsm_signal_metadata_source_value">Modem komórkowy (TelephonyManager)</string>
+    <string name="gsm_signal_metadata_note">Uwaga</string>
+    <string name="gsm_signal_metadata_note_value">Siła sygnału w dBm najsilniejszej zmierzonej komórki; wymaga aktywnej karty SIM</string>
 </resources>

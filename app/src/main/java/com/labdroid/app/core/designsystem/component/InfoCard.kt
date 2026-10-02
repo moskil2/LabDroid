@@ -2,6 +2,7 @@ package com.labdroid.app.core.designsystem.component
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.labdroid.app.core.designsystem.theme.DarkBackground
 
 private val CardShape = RoundedCornerShape(16.dp)
 private val IconShape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
@@ -30,9 +32,16 @@ fun InfoCard(
     value: String,
     modifier: Modifier = Modifier,
     @DrawableRes iconRes: Int? = null,
+    showBorderInDarkTheme: Boolean = false,
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val cardModifier = if (showBorderInDarkTheme && isDarkTheme) {
+        modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, CardShape)
+    } else {
+        modifier
+    }
     ElevatedCard(
-        modifier = modifier,
+        modifier = cardModifier,
         shape = CardShape,
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {

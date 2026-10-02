@@ -25,7 +25,7 @@ class SensorRepository @Inject constructor(@ApplicationContext private val conte
 
     fun getSensorsByPriority(): List<SensorInfo> {
         val infos = dedupedSensorInfos()
-        return infos.sortedWith(compareBy({ sensorPriority(it.type) }, { it.name }))
+        return infos.sortedWith(compareBy({ sensorPriority(it.type) }, { isRawVariant(it.type) }, { it.name }))
     }
 
     /**

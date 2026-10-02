@@ -18,7 +18,7 @@ class ThemeViewModel @Inject constructor(
 
     val themeMode: StateFlow<ThemeMode> = preferencesRepository.userPreferences
         .map { it.themeMode }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeMode.LIGHT)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeMode.DARK)
 
     fun toggleTheme(currentlyDark: Boolean) {
         viewModelScope.launch {

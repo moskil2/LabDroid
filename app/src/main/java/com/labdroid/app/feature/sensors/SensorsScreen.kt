@@ -2,8 +2,9 @@ package com.labdroid.app.feature.sensors
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,11 +15,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.SignalCellularAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,25 +46,31 @@ import com.labdroid.app.core.designsystem.component.StatusDot
 import com.labdroid.app.data.sensors.SensorIconMap
 import com.labdroid.app.data.sensors.SensorInfo
 import com.labdroid.app.data.sensors.friendlyNameResFor
-import com.labdroid.app.data.sensors.representativeValue
+import com.labdroid.app.data.sensors.sensorValue
 
 @Composable
 fun SensorsScreen(
     contentPadding: PaddingValues,
     onSensorClick: (Int) -> Unit,
     onSoundLevelClick: () -> Unit,
+    onGsmSignalClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SensorsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val bodySensorsLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) {}
+    val sensorPermissionsLauncher = rememberLauncherForActivityResult(RequestMultiplePermissions()) {}
     LaunchedEffect(Unit) {
-        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.BODY_SENSORS) ==
-            PackageManager.PERMISSION_GRANTED
-        if (!granted) {
-            bodySensorsLauncher.launch(Manifest.permission.BODY_SENSORS)
+        val neededPermissions = buildList {
+            add(Manifest.permission.BODY_SENSORS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                add(Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+        }
+        val ungranted = neededPermissions.filter {
+            ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+        }
+        if (ungranted.isNotEmpty()) {
+            sensorPermissionsLauncher.launch(ungranted.toTypedArray())
         }
     }
 
@@ -73,6 +83,9 @@ fun SensorsScreen(
     ) {
         item {
             SoundLevelRow(onClick = onSoundLevelClick, viewModel = viewModel)
+        }
+        item {
+            GsmSignalRow(onClick = onGsmSignalClick, viewModel = viewModel)
         }
         items(viewModel.sensors, key = { it.type }) { sensorInfo ->
             SensorRow(
@@ -131,6 +144,70 @@ private fun SoundLevelRow(onClick: () -> Unit, viewModel: SensorsViewModel) {
                 style = MaterialTheme.typography.labelMedium,
                 fontFamily = FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.End,
+                modifier = Modifier.width(64.dp),
+            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                StatusDot(color = if (hasReading) Color(0xFF2E7D32) else MaterialTheme.colorScheme.outline)
+                Text(
+                    text = stringResource(if (hasReading) R.string.sensors_status_ok else R.string.sensors_status_waiting),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GsmSignalRow(onClick: () -> Unit, viewModel: SensorsViewModel) {
+    val reading by produceState(initialValue = null as Float?, key1 = Unit) {
+        viewModel.observeGsmSignal().collect { value = it }
+    }
+    val valueText = remember(reading) { reading?.let { "% .0f".format(it) } ?: "—" }
+    val hasReading = reading != null
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.SignalCellularAlt,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.sensor_gsm_signal_name),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = stringResource(R.string.sensor_gsm_signal_subtitle),
+                style = MaterialTheme.typography.labelSmall,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "$valueText dBm",
+                style = MaterialTheme.typography.labelMedium,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.End,
+                modifier = Modifier.width(80.dp),
             )
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 StatusDot(color = if (hasReading) Color(0xFF2E7D32) else MaterialTheme.colorScheme.outline)
@@ -154,7 +231,7 @@ private fun SensorRow(
         viewModel.observeReadings(sensorInfo).collect { value = it }
     }
     val valueText = remember(reading) {
-        reading?.let { "%.2f".format(representativeValue(it.values)) } ?: "—"
+        reading?.let { "%.2f".format(sensorValue(sensorInfo.type, it.values)) } ?: "—"
     }
     val hasReading = reading != null
 
@@ -197,6 +274,8 @@ private fun SensorRow(
                 style = MaterialTheme.typography.labelMedium,
                 fontFamily = FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.End,
+                modifier = Modifier.width(80.dp),
             )
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 StatusDot(color = if (hasReading) Color(0xFF2E7D32) else MaterialTheme.colorScheme.outline)

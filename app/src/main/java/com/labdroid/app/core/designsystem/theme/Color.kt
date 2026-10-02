@@ -33,3 +33,8 @@ val VividGreen = Color(0xFF00E676)
 
 /** Slightly darker than DarkSurface so it blends with the near-black backdrop baked into the photo icons. */
 val DarkBottomNavBackground = Color(0xFF15171B)
+
+/** Fixed axis-identity colors (X/Y/Z) for multi-series charts, e.g. the uncalibrated magnetometer. */
+val AxisGreen = Color(0xFF4CAF50)
+val AxisBlue = Color(0xFF2196F3)
+val AxisRed = Color(0xFFF44336)

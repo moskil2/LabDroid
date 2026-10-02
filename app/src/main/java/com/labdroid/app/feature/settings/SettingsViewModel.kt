@@ -3,6 +3,7 @@ package com.labdroid.app.feature.settings
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,14 +36,17 @@ class SettingsViewModel @Inject constructor(
     }.getOrNull() ?: "unknown"
 
     val permissionStatuses: List<PermissionStatus>
-        get() = listOf(
-            R.string.permission_location to Manifest.permission.ACCESS_FINE_LOCATION,
-            R.string.permission_camera to Manifest.permission.CAMERA,
-            R.string.permission_body_sensors to Manifest.permission.BODY_SENSORS,
-            R.string.permission_bluetooth to Manifest.permission.BLUETOOTH_CONNECT,
-            R.string.permission_phone_state to Manifest.permission.READ_PHONE_STATE,
-            R.string.permission_notifications to Manifest.permission.POST_NOTIFICATIONS,
-        ).map { (labelRes, permission) ->
+        get() = buildList {
+            add(R.string.permission_location to Manifest.permission.ACCESS_FINE_LOCATION)
+            add(R.string.permission_camera to Manifest.permission.CAMERA)
+            add(R.string.permission_body_sensors to Manifest.permission.BODY_SENSORS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                add(R.string.permission_activity_recognition to Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+            add(R.string.permission_bluetooth to Manifest.permission.BLUETOOTH_CONNECT)
+            add(R.string.permission_phone_state to Manifest.permission.READ_PHONE_STATE)
+            add(R.string.permission_notifications to Manifest.permission.POST_NOTIFICATIONS)
+        }.map { (labelRes, permission) ->
             PermissionStatus(
                 label = context.getString(labelRes),
                 granted = ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED,

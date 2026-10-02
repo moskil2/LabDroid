@@ -16,6 +16,7 @@ import com.labdroid.app.feature.hardware.HardwareScreen
 import com.labdroid.app.feature.monitor.MonitorScreen
 import com.labdroid.app.feature.search.SearchScreen
 import com.labdroid.app.feature.sensors.SensorsScreen
+import com.labdroid.app.feature.sensors.detail.GsmSignalDetailScreen
 import com.labdroid.app.feature.sensors.detail.SensorDetailScreen
 import com.labdroid.app.feature.sensors.detail.SoundLevelDetailScreen
 import com.labdroid.app.feature.settings.SettingsScreen
@@ -41,6 +42,7 @@ fun LabDroidNavHost(
                 contentPadding = contentPadding,
                 onSensorClick = { type -> navController.navigate("sensor_detail/$type") },
                 onSoundLevelClick = { navController.navigate("sound_level") },
+                onGsmSignalClick = { navController.navigate("gsm_signal") },
             )
         }
         composable(LabDroidDestination.HARDWARE.route) {
@@ -60,6 +62,9 @@ fun LabDroidNavHost(
         }
         composable("sound_level") {
             SoundLevelDetailScreen(contentPadding = contentPadding)
+        }
+        composable("gsm_signal") {
+            GsmSignalDetailScreen(contentPadding = contentPadding)
         }
         composable("gps") {
             GpsScreen(contentPadding = contentPadding)

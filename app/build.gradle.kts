@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Properties
 
 plugins {
@@ -30,6 +32,9 @@ android {
         versionCode = appVersionCode
         versionName = appVersionName
 
+        val buildStamp = SimpleDateFormat("yyyyMMdd.HHmm").format(Date())
+        buildConfigField("String", "BUILD_STAMP", "\"$buildStamp\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -51,6 +56,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {

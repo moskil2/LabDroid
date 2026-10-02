@@ -65,10 +65,10 @@ class DashboardViewModel @Inject constructor(
                     DashboardInfoRow(s(R.string.dashboard_android_version), device.androidVersion, R.drawable.ic_ph_android),
                 ) + listOfNotNull(
                     device.androidCodename?.let {
-                        DashboardInfoRow(s(R.string.dashboard_android_codename), it, R.drawable.ic_ph_android)
+                        DashboardInfoRow(s(R.string.dashboard_android_codename), it, R.drawable.ic_ph_android_2)
                     },
                     device.securityPatch?.let {
-                        DashboardInfoRow(s(R.string.dashboard_security_patch), it, R.drawable.ic_ph_android)
+                        DashboardInfoRow(s(R.string.dashboard_security_patch), it, R.drawable.ic_ph_android_3)
                     },
                 ) + listOf(
                     DashboardInfoRow(s(R.string.dashboard_kernel), device.kernelVersion, R.drawable.ic_ph_kernel),

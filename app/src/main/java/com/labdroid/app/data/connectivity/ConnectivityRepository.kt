@@ -2,6 +2,7 @@ package com.labdroid.app.data.connectivity
 
 import android.Manifest
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothStatusCodes
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -26,13 +27,21 @@ data class ConnectivitySnapshot(
     val wifiLinkSpeed: String,
     val wifiStandard: String,
     val cellularOperator: String,
+    val cellularMccMnc: String,
     val cellularGeneration: String,
+    val cellularSignalStrength: String,
+    val cellularDataState: String,
     val cellularRoaming: String,
+    val cellularCountryIso: String,
     val simState: String,
     val bluetoothAvailable: Boolean,
     val bluetoothAdapterName: String,
     val bluetoothEnabled: String,
     val bluetoothPairedCount: String,
+    val bluetoothPairedNames: String,
+    val bluetoothLeSupported: Boolean,
+    val bluetoothLeAudioSupported: String,
+    val bluetoothMultipleAdvertisementSupported: String,
     val nfcAvailable: Boolean,
 )
 
@@ -59,13 +68,21 @@ class ConnectivityRepository @Inject constructor(@ApplicationContext private val
             wifiLinkSpeed = wifiLinkSpeed(),
             wifiStandard = wifiStandard(),
             cellularOperator = cellularOperator(),
+            cellularMccMnc = cellularMccMnc(),
             cellularGeneration = cellularGeneration(),
+            cellularSignalStrength = cellularSignalStrength(),
+            cellularDataState = cellularDataState(),
             cellularRoaming = cellularRoaming(),
+            cellularCountryIso = cellularCountryIso(),
             simState = simState(),
             bluetoothAvailable = context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH),
             bluetoothAdapterName = bluetoothAdapterName(),
             bluetoothEnabled = bluetoothEnabled(),
             bluetoothPairedCount = bluetoothPairedCount(),
+            bluetoothPairedNames = bluetoothPairedNames(),
+            bluetoothLeSupported = context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE),
+            bluetoothLeAudioSupported = bluetoothLeAudioSupported(),
+            bluetoothMultipleAdvertisementSupported = bluetoothMultipleAdvertisementSupported(),
             nfcAvailable = context.packageManager.hasSystemFeature(PackageManager.FEATURE_NFC),
         )
     }
@@ -181,6 +198,45 @@ class ConnectivityRepository @Inject constructor(@ApplicationContext private val
         if (telephonyManager?.isNetworkRoaming == true) yes else no
     }.getOrDefault(NOT_AVAILABLE)
 
+    private fun cellularMccMnc(): String = runCatching {
+        telephonyManager?.networkOperator?.takeIf { it.isNotBlank() } ?: NOT_AVAILABLE
+    }.getOrDefault(NOT_AVAILABLE)
+
+    private fun cellularCountryIso(): String = runCatching {
+        telephonyManager?.networkCountryIso?.takeIf { it.isNotBlank() }?.uppercase() ?: NOT_AVAILABLE
+    }.getOrDefault(NOT_AVAILABLE)
+
+    private fun cellularSignalStrength(): String {
+        if (!hasPermission(Manifest.permission.READ_PHONE_STATE)) return permissionRequired
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return unknown
+        return runCatching {
+            val signal = telephonyManager?.signalStrength ?: return NOT_AVAILABLE
+            val level = signal.level
+            val dbm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                signal.cellSignalStrengths.firstOrNull()?.dbm
+            } else {
+                null
+            }
+            if (dbm != null) "$dbm dBm · ${context.getString(R.string.connectivity_signal_level, level)}" else context.getString(R.string.connectivity_signal_level, level)
+        }.getOrDefault(NOT_AVAILABLE)
+    }
+
+    private fun cellularDataState(): String {
+        if (!hasPermission(Manifest.permission.READ_PHONE_STATE)) return permissionRequired
+        return runCatching {
+            context.getString(
+                @Suppress("DEPRECATION")
+                when (telephonyManager?.dataState) {
+                    TelephonyManager.DATA_CONNECTED -> R.string.connectivity_data_connected
+                    TelephonyManager.DATA_CONNECTING -> R.string.connectivity_data_connecting
+                    TelephonyManager.DATA_DISCONNECTED -> R.string.connectivity_data_disconnected
+                    TelephonyManager.DATA_SUSPENDED -> R.string.connectivity_data_suspended
+                    else -> R.string.cameras_unknown
+                },
+            )
+        }.getOrDefault(NOT_AVAILABLE)
+    }
+
     private fun simState(): String = runCatching {
         context.getString(
             when (telephonyManager?.simState) {
@@ -223,4 +279,35 @@ class ConnectivityRepository @Inject constructor(@ApplicationContext private val
             bluetoothAdapter?.bondedDevices?.size?.toString() ?: NOT_AVAILABLE
         }.getOrDefault(NOT_AVAILABLE)
     }
+
+    private fun bluetoothPairedNames(): String {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            !hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        ) {
+            return permissionRequired
+        }
+        return runCatching {
+            bluetoothAdapter?.bondedDevices
+                ?.mapNotNull { it.name?.takeIf(String::isNotBlank) }
+                ?.joinToString(", ")
+                ?.takeIf { it.isNotBlank() }
+                ?: NOT_AVAILABLE
+        }.getOrDefault(NOT_AVAILABLE)
+    }
+
+    private fun bluetoothLeAudioSupported(): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return unknown
+        if (!hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) return permissionRequired
+        return runCatching {
+            when (bluetoothAdapter?.isLeAudioSupported) {
+                BluetoothStatusCodes.FEATURE_SUPPORTED -> yes
+                BluetoothStatusCodes.FEATURE_NOT_SUPPORTED -> no
+                else -> unknown
+            }
+        }.getOrDefault(NOT_AVAILABLE)
+    }
+
+    private fun bluetoothMultipleAdvertisementSupported(): String = runCatching {
+        if (bluetoothAdapter?.isMultipleAdvertisementSupported == true) yes else no
+    }.getOrDefault(NOT_AVAILABLE)
 }

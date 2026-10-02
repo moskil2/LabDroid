@@ -2,6 +2,12 @@ package com.labdroid.app.feature.sensors.detail
 
 import com.labdroid.app.data.sensors.SensorDelayOption
 
+data class AxisHistory(
+    val x: List<Float> = emptyList(),
+    val y: List<Float> = emptyList(),
+    val z: List<Float> = emptyList(),
+)
+
 data class SensorDetailUiState(
     val latestValue: Float? = null,
     val history: List<Float> = emptyList(),
@@ -11,4 +17,5 @@ data class SensorDetailUiState(
     val stdDev: Float? = null,
     val delayOption: SensorDelayOption = SensorDelayOption.NORMAL,
     val isPaused: Boolean = false,
+    val axisHistory: AxisHistory? = null,
 )

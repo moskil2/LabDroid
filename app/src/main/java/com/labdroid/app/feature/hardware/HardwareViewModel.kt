@@ -91,13 +91,22 @@ class HardwareViewModel @Inject constructor(
                             s(R.string.hardware_renderer) to gpu.renderer,
                             s(R.string.hardware_vendor) to gpu.vendor,
                             s(R.string.hardware_gl_version) to gpu.glVersion,
+                            s(R.string.hardware_glsl_version) to gpu.glslVersion,
                             s(R.string.hardware_egl_version) to gpu.eglVersion,
                             s(R.string.hardware_gl_extensions) to s(R.string.hardware_extensions_count).format(gpu.glExtensionsCount),
+                        ) + listOfNotNull(
+                            gpu.maxTextureSize?.let { s(R.string.hardware_max_texture_size) to "$it px" },
+                            gpu.maxViewportDims?.let { s(R.string.hardware_max_viewport_dims) to it },
+                        ) + listOf(
                             s(R.string.hardware_vulkan) to if (gpu.vulkanSupported) {
                                 gpu.vulkanVersion?.let { "$supported ($it)" } ?: supported
                             } else {
                                 notSupported
                             },
+                        ) + listOfNotNull(
+                            gpu.vulkanHardwareLevel?.let { s(R.string.hardware_vulkan_hardware_level) to it.toString() },
+                        ) + listOf(
+                            s(R.string.hardware_vulkan_compute) to if (gpu.vulkanComputeSupported) supported else notSupported,
                         ),
                     ),
                     HardwareSection(
@@ -108,9 +117,15 @@ class HardwareViewModel @Inject constructor(
                             s(R.string.hardware_available) to formatBytesAsGb(ram.availableBytes),
                         ) + listOfNotNull(
                             ram.kernelAvailableBytes?.let { s(R.string.hardware_available_kernel) to formatBytesAsGb(it) },
+                            ram.cachedBytes?.let { s(R.string.hardware_cached) to formatBytesAsGb(it) },
+                            ram.buffersBytes?.let { s(R.string.hardware_buffers) to formatBytesAsGb(it) },
                             ram.thresholdBytes?.let { s(R.string.hardware_low_memory_threshold) to formatBytesAsGb(it) },
                             ram.isLowMemory?.let { s(R.string.hardware_low_memory_state) to if (it) yes else no },
+                            ram.isLowRamDevice?.let { s(R.string.hardware_low_ram_device) to if (it) yes else no },
                             ram.swapTotalBytes?.takeIf { it > 0 }?.let { s(R.string.hardware_swap_total) to formatBytesAsGb(it) },
+                            ram.swapFreeBytes?.takeIf { it > 0 }?.let { s(R.string.hardware_swap_free) to formatBytesAsGb(it) },
+                            ram.memoryClassMb?.let { s(R.string.hardware_memory_class) to "$it MB" },
+                            ram.largeMemoryClassMb?.let { s(R.string.hardware_large_memory_class) to "$it MB" },
                         ),
                     ),
                     HardwareSection(
@@ -118,8 +133,14 @@ class HardwareViewModel @Inject constructor(
                         iconRes = R.drawable.ic_ph_storage,
                         rows = listOf(
                             s(R.string.hardware_total) to formatBytesAsGb(storage.totalBytes),
+                            s(R.string.hardware_used) to formatBytesAsGb(storage.usedBytes),
                             s(R.string.hardware_free) to formatBytesAsGb(storage.availableBytes),
-                        ),
+                        ) + storage.removableVolumes.flatMap { volume ->
+                            listOf(
+                                "${volume.label} — ${s(R.string.hardware_total)}" to formatBytesAsGb(volume.totalBytes),
+                                "${volume.label} — ${s(R.string.hardware_free)}" to formatBytesAsGb(volume.availableBytes),
+                            )
+                        },
                     ),
                     HardwareSection(
                         title = s(R.string.hardware_section_battery),
@@ -141,8 +162,18 @@ class HardwareViewModel @Inject constructor(
                         rows = listOf(
                             s(R.string.hardware_resolution) to "${display.widthPx} × ${display.heightPx}",
                             s(R.string.hardware_density) to "${display.density}x",
+                            s(R.string.hardware_density_dpi) to "${display.densityDpi} dpi (${display.densityBucket})",
+                            s(R.string.hardware_diagonal_size) to (
+                                display.diagonalInches?.let { "%.1f\"".format(it) } ?: unavailable
+                                ),
                             s(R.string.hardware_refresh_rate) to "${display.refreshRateHz} Hz",
-                            s(R.string.hardware_hdr) to if (display.hdrSupported) supported else notSupported,
+                            s(R.string.hardware_supported_refresh_rates) to if (display.supportedRefreshRates.isEmpty()) {
+                                unavailable
+                            } else {
+                                display.supportedRefreshRates.joinToString(", ") { "%.0f".format(it) } + " Hz"
+                            },
+                            s(R.string.hardware_wide_color_gamut) to if (display.wideColorGamut) supported else notSupported,
+                            s(R.string.hardware_hdr) to display.hdrTypes.joinToString(", ").ifEmpty { notSupported },
                         ),
                     ),
                     HardwareSection(
@@ -167,31 +198,65 @@ class HardwareViewModel @Inject constructor(
                         ),
                     ),
                     HardwareSection(
-                        title = s(R.string.hardware_section_connectivity),
-                        iconRes = R.drawable.ic_ph_connectivity,
+                        title = s(R.string.hardware_section_network),
                         rows = listOf(
                             s(R.string.hardware_active_connection) to connectivity.activeConnectionLabel,
                             s(R.string.hardware_metered) to connectivity.isMetered,
                             s(R.string.hardware_internet_validated) to connectivity.hasValidatedInternet,
+                        ),
+                    ),
+                    HardwareSection(
+                        title = s(R.string.hardware_section_wifi),
+                        iconRes = R.drawable.ic_ph_connectivity,
+                        rows = listOf(
                             s(R.string.hardware_wifi_ssid) to connectivity.wifiSsid,
                             s(R.string.hardware_wifi_signal) to connectivity.wifiSignal,
                             s(R.string.hardware_wifi_frequency) to connectivity.wifiFrequencyBand,
                             s(R.string.hardware_wifi_link_speed) to connectivity.wifiLinkSpeed,
                             s(R.string.hardware_wifi_standard) to connectivity.wifiStandard,
+                        ),
+                    ),
+                    HardwareSection(
+                        title = s(R.string.hardware_section_cellular),
+                        rows = listOf(
                             s(R.string.hardware_cellular_operator) to connectivity.cellularOperator,
+                            s(R.string.hardware_cellular_mcc_mnc) to connectivity.cellularMccMnc,
                             s(R.string.hardware_cellular_generation) to connectivity.cellularGeneration,
+                            s(R.string.hardware_cellular_signal) to connectivity.cellularSignalStrength,
+                            s(R.string.hardware_cellular_data_state) to connectivity.cellularDataState,
                             s(R.string.hardware_cellular_roaming) to connectivity.cellularRoaming,
+                            s(R.string.hardware_cellular_country) to connectivity.cellularCountryIso,
                             s(R.string.hardware_sim_state) to connectivity.simState,
-                            s(R.string.hardware_bluetooth) to if (connectivity.bluetoothAvailable) available else unavailableShort,
-                            s(R.string.hardware_bluetooth_adapter) to connectivity.bluetoothAdapterName,
-                            s(R.string.hardware_bluetooth_enabled) to connectivity.bluetoothEnabled,
-                            s(R.string.hardware_paired_devices) to connectivity.bluetoothPairedCount,
-                            s(R.string.hardware_nfc) to if (connectivity.nfcAvailable) available else unavailableShort,
                         ),
                         permissionRows = mapOf(
                             s(R.string.hardware_cellular_generation) to Manifest.permission.READ_PHONE_STATE,
+                            s(R.string.hardware_cellular_signal) to Manifest.permission.READ_PHONE_STATE,
+                            s(R.string.hardware_cellular_data_state) to Manifest.permission.READ_PHONE_STATE,
+                        ),
+                    ),
+                    HardwareSection(
+                        title = s(R.string.hardware_section_bluetooth),
+                        rows = listOf(
+                            s(R.string.hardware_bluetooth) to if (connectivity.bluetoothAvailable) available else unavailableShort,
+                            s(R.string.hardware_bluetooth_le) to if (connectivity.bluetoothLeSupported) available else unavailableShort,
+                            s(R.string.hardware_bluetooth_adapter) to connectivity.bluetoothAdapterName,
+                            s(R.string.hardware_bluetooth_enabled) to connectivity.bluetoothEnabled,
+                            s(R.string.hardware_paired_devices) to connectivity.bluetoothPairedCount,
+                            s(R.string.hardware_paired_device_names) to connectivity.bluetoothPairedNames,
+                            s(R.string.hardware_bluetooth_le_audio) to connectivity.bluetoothLeAudioSupported,
+                            s(R.string.hardware_bluetooth_multi_advertisement) to connectivity.bluetoothMultipleAdvertisementSupported,
+                        ),
+                        permissionRows = mapOf(
                             s(R.string.hardware_bluetooth_adapter) to Manifest.permission.BLUETOOTH_CONNECT,
                             s(R.string.hardware_paired_devices) to Manifest.permission.BLUETOOTH_CONNECT,
+                            s(R.string.hardware_paired_device_names) to Manifest.permission.BLUETOOTH_CONNECT,
+                            s(R.string.hardware_bluetooth_le_audio) to Manifest.permission.BLUETOOTH_CONNECT,
+                        ),
+                    ),
+                    HardwareSection(
+                        title = s(R.string.hardware_section_nfc),
+                        rows = listOf(
+                            s(R.string.hardware_nfc) to if (connectivity.nfcAvailable) available else unavailableShort,
                         ),
                     ),
                 ),

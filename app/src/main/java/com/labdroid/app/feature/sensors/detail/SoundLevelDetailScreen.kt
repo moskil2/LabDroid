@@ -36,9 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,12 +48,15 @@ import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.Zoom
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLineComponent
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 import com.labdroid.app.R
@@ -169,6 +174,8 @@ private fun SoundHeroCard(uiState: SensorDetailUiState) {
                     style = MaterialTheme.typography.headlineLarge,
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onPrimary,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(110.dp),
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -201,7 +208,7 @@ private fun SoundChartCard(history: List<Float>) {
                 val modelProducer = remember { CartesianChartModelProducer() }
                 LaunchedEffect(history) {
                     modelProducer.runTransaction {
-                        lineSeries { series(history) }
+                        lineSeries { series(x = (1..history.size).map { it as Number }, y = history) }
                     }
                 }
                 val dataMin = history.min()
@@ -210,26 +217,34 @@ private fun SoundChartCard(history: List<Float>) {
                 val rangeProvider = remember(dataMin, dataMax) {
                     CartesianLayerRangeProvider.fixed(
                         minX = 0.0,
-                        maxX = (SensorDetailViewModel.HISTORY_SIZE - 1).toDouble(),
+                        maxX = SensorDetailViewModel.HISTORY_SIZE.toDouble(),
                         minY = (dataMin - padding).toDouble(),
                         maxY = (dataMax + padding).toDouble(),
                     )
                 }
-                val fixedZoom = Zoom.x((SensorDetailViewModel.HISTORY_SIZE - 1).toDouble())
                 val zoomState = rememberVicoZoomState(
                     zoomEnabled = false,
-                    initialZoom = fixedZoom,
-                    minZoom = fixedZoom,
-                    maxZoom = fixedZoom,
+                    initialZoom = Zoom.Content,
+                    minZoom = Zoom.Content,
+                    maxZoom = Zoom.Content,
+                )
+                val scrollState = rememberVicoScrollState(scrollEnabled = false)
+                val axisLine = rememberAxisLineComponent(
+                    fill = Fill(SolidColor(MaterialTheme.colorScheme.outline)),
+                    thickness = 2.dp,
                 )
                 ProvideVicoTheme(rememberM3VicoTheme()) {
                     CartesianChartHost(
                         chart = rememberCartesianChart(
                             rememberLineCartesianLayer(rangeProvider = rangeProvider),
-                            startAxis = VerticalAxis.rememberStart(),
-                            bottomAxis = HorizontalAxis.rememberBottom(),
+                            startAxis = VerticalAxis.rememberStart(line = axisLine),
+                            bottomAxis = HorizontalAxis.rememberBottom(
+                                line = axisLine,
+                                itemPlacer = remember { HorizontalAxis.ItemPlacer.aligned(spacing = { 25 }) },
+                            ),
                         ),
                         modelProducer = modelProducer,
+                        scrollState = scrollState,
                         zoomState = zoomState,
                         animationSpec = null,
                         modifier = Modifier

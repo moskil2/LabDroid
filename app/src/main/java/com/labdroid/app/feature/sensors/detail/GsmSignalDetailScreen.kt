@@ -1,5 +1,9 @@
 package com.labdroid.app.feature.sensors.detail
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,16 +31,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.labdroid.app.R
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.Zoom
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
@@ -45,8 +52,6 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLineComponen
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
-import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
-import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
@@ -54,34 +59,40 @@ import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
 import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
+import com.labdroid.app.R
 import com.labdroid.app.core.designsystem.component.ExportMenuButton
 import com.labdroid.app.core.designsystem.component.InfoCard
 import com.labdroid.app.core.designsystem.component.SectionCard
-import com.labdroid.app.core.designsystem.component.StatusDot
-import com.labdroid.app.core.designsystem.theme.AxisBlue
-import com.labdroid.app.core.designsystem.theme.AxisGreen
-import com.labdroid.app.core.designsystem.theme.AxisRed
 import com.labdroid.app.data.export.ExportFormat
 import com.labdroid.app.data.sensors.SensorDelayOption
-import com.labdroid.app.data.sensors.SensorInfo
-import com.labdroid.app.data.sensors.hasAxisView
-import com.labdroid.app.data.sensors.unitFor
 
 @Composable
-fun SensorDetailScreen(
+fun GsmSignalDetailScreen(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    viewModel: SensorDetailViewModel = hiltViewModel(),
+    viewModel: GsmSignalDetailViewModel = hiltViewModel(),
 ) {
-    val sensorInfo = viewModel.sensorInfo
+    val context = LocalContext.current
+    var hasPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
+                PackageManager.PERMISSION_GRANTED,
+        )
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> hasPermission = granted }
 
-    if (sensorInfo == null) {
-        Box(
-            modifier = modifier.fillMaxSize().padding(contentPadding),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(stringResource(R.string.sensor_detail_unavailable))
-        }
+    LaunchedEffect(hasPermission) {
+        if (hasPermission) viewModel.restartCollecting()
+    }
+
+    if (!hasPermission) {
+        GsmSignalPermissionRationale(
+            contentPadding = contentPadding,
+            modifier = modifier,
+            onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_PHONE_STATE) },
+        )
         return
     }
 
@@ -98,33 +109,53 @@ fun SensorDetailScreen(
         ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item { HeroCard(sensorInfo, uiState) }
-        val axisHistory = uiState.axisHistory
-        if (hasAxisView(sensorInfo.type) && axisHistory != null) {
-            item { AxisValuesCard(axisHistory) }
-            item { AxisChartCard(axisHistory) }
-        } else {
-            item { ChartCard(uiState.history) }
-        }
-        item { DelaySelector(uiState.delayOption, onSelect = viewModel::selectDelay) }
-        item { StatsGrid(uiState) }
+        item { GsmSignalHeroCard(uiState) }
+        item { GsmSignalChartCard(uiState.history) }
+        item { GsmSignalDelaySelector(uiState.delayOption, onSelect = viewModel::selectDelay) }
+        item { GsmSignalStatsGrid(uiState) }
         item {
-            ActionsRow(
+            GsmSignalActionsRow(
                 isPaused = uiState.isPaused,
                 onPause = viewModel::togglePause,
                 onReset = viewModel::reset,
-                sensorName = sensorInfo.name,
                 hasSamples = uiState.history.isNotEmpty(),
                 onExport = viewModel::exportHistory,
                 exportFolderUri = exportFolderUri,
             )
         }
-        item { MetadataCard(sensorInfo) }
+        item { GsmSignalMetadataCard() }
     }
 }
 
 @Composable
-private fun HeroCard(sensorInfo: SensorInfo, uiState: SensorDetailUiState) {
+private fun GsmSignalPermissionRationale(
+    contentPadding: PaddingValues,
+    onRequestPermission: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(contentPadding)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = stringResource(R.string.gsm_signal_permission_rationale),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onRequestPermission) {
+                Text(stringResource(R.string.gsm_signal_grant_permission))
+            }
+        }
+    }
+}
+
+@Composable
+private fun GsmSignalHeroCard(uiState: SensorDetailUiState) {
     ElevatedCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -132,29 +163,26 @@ private fun HeroCard(sensorInfo: SensorInfo, uiState: SensorDetailUiState) {
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                text = sensorInfo.name,
+                text = stringResource(R.string.sensor_gsm_signal_name),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimary,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = uiState.latestValue?.let { "%.2f".format(it) } ?: "—",
+                    text = uiState.latestValue?.let { "% .0f".format(it) } ?: "—",
                     style = MaterialTheme.typography.headlineLarge,
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.End,
-                    modifier = Modifier.width(140.dp),
+                    modifier = Modifier.width(110.dp),
                 )
-                val unit = unitFor(sensorInfo.type)
-                if (unit.isNotEmpty()) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = unit,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                    )
-                }
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "dBm",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
             }
             Text(
                 text = stringResource(if (uiState.isPaused) R.string.sensor_detail_paused else R.string.sensor_detail_updating_live),
@@ -166,7 +194,7 @@ private fun HeroCard(sensorInfo: SensorInfo, uiState: SensorDetailUiState) {
 }
 
 @Composable
-private fun ChartCard(history: List<Float>) {
+private fun GsmSignalChartCard(history: List<Float>) {
     ElevatedCard(shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(14.dp)) {
             Text(
@@ -243,7 +271,7 @@ private fun ChartCard(history: List<Float>) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DelaySelector(selected: SensorDelayOption, onSelect: (SensorDelayOption) -> Unit) {
+private fun GsmSignalDelaySelector(selected: SensorDelayOption, onSelect: (SensorDelayOption) -> Unit) {
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         SensorDelayOption.entries.forEachIndexed { index, option ->
             SegmentedButton(
@@ -258,7 +286,7 @@ private fun DelaySelector(selected: SensorDelayOption, onSelect: (SensorDelayOpt
 }
 
 @Composable
-private fun StatsGrid(uiState: SensorDetailUiState) {
+private fun GsmSignalStatsGrid(uiState: SensorDetailUiState) {
     val stats = listOf(
         stringResource(R.string.sensor_detail_minimum) to uiState.minValue,
         stringResource(R.string.sensor_detail_maximum) to uiState.maxValue,
@@ -271,7 +299,7 @@ private fun StatsGrid(uiState: SensorDetailUiState) {
                 rowPair.forEach { (label, value) ->
                     InfoCard(
                         label = label,
-                        value = value?.let { "%.3f".format(it) } ?: "—",
+                        value = value?.let { "%.1f".format(it) } ?: "—",
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -281,16 +309,14 @@ private fun StatsGrid(uiState: SensorDetailUiState) {
 }
 
 @Composable
-private fun ActionsRow(
+private fun GsmSignalActionsRow(
     isPaused: Boolean,
     onPause: () -> Unit,
     onReset: () -> Unit,
-    sensorName: String,
     hasSamples: Boolean,
     onExport: (android.net.Uri, ExportFormat) -> Unit,
     exportFolderUri: String?,
 ) {
-    val slug = remember(sensorName) { sensorName.lowercase().replace(Regex("[^a-z0-9]+"), "_") }
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
         FilledTonalButton(onClick = onPause, modifier = Modifier.weight(1f)) {
             Text(stringResource(if (isPaused) R.string.sensor_detail_resume else R.string.sensor_detail_pause))
@@ -300,7 +326,7 @@ private fun ActionsRow(
         }
         ExportMenuButton(
             formats = listOf(ExportFormat.CSV, ExportFormat.JSON, ExportFormat.XML, ExportFormat.TXT),
-            fileNameFor = { format -> "$slug.${format.extension}" },
+            fileNameFor = { format -> "gsm_signal.${format.extension}" },
             onFormatChosen = onExport,
             enabled = hasSamples,
             modifier = Modifier.weight(1f),
@@ -310,146 +336,12 @@ private fun ActionsRow(
 }
 
 @Composable
-private fun AxisValuesCard(axisHistory: AxisHistory) {
-    ElevatedCard(shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            AxisValueColumn("X", axisHistory.x.lastOrNull(), AxisGreen)
-            AxisValueColumn("Y", axisHistory.y.lastOrNull(), AxisBlue)
-            AxisValueColumn("Z", axisHistory.z.lastOrNull(), AxisRed)
-        }
-    }
-}
-
-@Composable
-private fun AxisValueColumn(label: String, value: Float?, color: androidx.compose.ui.graphics.Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            StatusDot(color = color)
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Text(
-            text = value?.let { "% .2f".format(it) } ?: "—",
-            style = MaterialTheme.typography.titleMedium,
-            fontFamily = FontFamily.Monospace,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(84.dp),
-        )
-    }
-}
-
-@Composable
-private fun AxisChartCard(axisHistory: AxisHistory) {
-    ElevatedCard(shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Text(
-                text = stringResource(R.string.sensor_detail_live_chart, axisHistory.x.size),
-                style = MaterialTheme.typography.labelSmall,
-                fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            if (axisHistory.x.size >= 2) {
-                val modelProducer = remember { CartesianChartModelProducer() }
-                LaunchedEffect(axisHistory) {
-                    modelProducer.runTransaction {
-                        lineSeries {
-                            series(x = (1..axisHistory.x.size).map { it as Number }, y = axisHistory.x)
-                            series(x = (1..axisHistory.y.size).map { it as Number }, y = axisHistory.y)
-                            series(x = (1..axisHistory.z.size).map { it as Number }, y = axisHistory.z)
-                        }
-                    }
-                }
-                val allValues = axisHistory.x + axisHistory.y + axisHistory.z
-                val dataMin = allValues.min()
-                val dataMax = allValues.max()
-                val padding = ((dataMax - dataMin).takeIf { it > 0f } ?: (kotlin.math.abs(dataMax) * 0.1f + 1f)) * 0.15f
-                val rangeProvider = remember(dataMin, dataMax) {
-                    CartesianLayerRangeProvider.fixed(
-                        minX = 0.0,
-                        maxX = SensorDetailViewModel.HISTORY_SIZE.toDouble(),
-                        minY = (dataMin - padding).toDouble(),
-                        maxY = (dataMax + padding).toDouble(),
-                    )
-                }
-                val zoomState = rememberVicoZoomState(
-                    zoomEnabled = false,
-                    initialZoom = Zoom.Content,
-                    minZoom = Zoom.Content,
-                    maxZoom = Zoom.Content,
-                )
-                val scrollState = rememberVicoScrollState(scrollEnabled = false)
-                val greenLine = LineCartesianLayer.rememberLine(fill = LineCartesianLayer.LineFill.single(Fill(SolidColor(AxisGreen))))
-                val blueLine = LineCartesianLayer.rememberLine(fill = LineCartesianLayer.LineFill.single(Fill(SolidColor(AxisBlue))))
-                val redLine = LineCartesianLayer.rememberLine(fill = LineCartesianLayer.LineFill.single(Fill(SolidColor(AxisRed))))
-                val lineProvider = remember(greenLine, blueLine, redLine) {
-                    LineCartesianLayer.LineProvider.series(greenLine, blueLine, redLine)
-                }
-                val axisLine = rememberAxisLineComponent(
-                    fill = Fill(SolidColor(MaterialTheme.colorScheme.outline)),
-                    thickness = 2.dp,
-                )
-                ProvideVicoTheme(rememberM3VicoTheme()) {
-                    CartesianChartHost(
-                        chart = rememberCartesianChart(
-                            rememberLineCartesianLayer(lineProvider = lineProvider, rangeProvider = rangeProvider),
-                            startAxis = VerticalAxis.rememberStart(line = axisLine),
-                            bottomAxis = HorizontalAxis.rememberBottom(
-                                line = axisLine,
-                                itemPlacer = remember { HorizontalAxis.ItemPlacer.aligned(spacing = { 25 }) },
-                            ),
-                        ),
-                        modelProducer = modelProducer,
-                        scrollState = scrollState,
-                        zoomState = zoomState,
-                        animationSpec = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp),
-                    )
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(R.string.sensor_detail_collecting_samples),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MetadataCard(sensorInfo: SensorInfo) {
+private fun GsmSignalMetadataCard() {
     SectionCard(
         title = stringResource(R.string.sensor_detail_metadata),
         rows = listOf(
-            stringResource(R.string.sensor_detail_vendor) to sensorInfo.vendor,
-            stringResource(R.string.sensor_detail_version) to sensorInfo.version.toString(),
-            stringResource(R.string.sensor_detail_resolution) to sensorInfo.resolution.toString(),
-            stringResource(R.string.sensor_detail_max_range) to sensorInfo.maximumRange.toString(),
-            stringResource(R.string.sensor_detail_power) to "${sensorInfo.power} mA",
-            stringResource(R.string.sensor_detail_min_delay) to "${sensorInfo.minDelayUs} µs",
-            stringResource(R.string.sensor_detail_fifo) to sensorInfo.fifoMaxEventCount.toString(),
-            stringResource(R.string.sensor_detail_wake_up) to stringResource(
-                if (sensorInfo.isWakeUpSensor) R.string.common_yes else R.string.common_no,
-            ),
-            stringResource(R.string.sensor_detail_reporting_mode) to sensorInfo.reportingMode,
+            stringResource(R.string.gsm_signal_metadata_source) to stringResource(R.string.gsm_signal_metadata_source_value),
+            stringResource(R.string.gsm_signal_metadata_note) to stringResource(R.string.gsm_signal_metadata_note_value),
         ),
     )
 }

@@ -37,6 +37,7 @@ fun DashboardScreen(
                 value = row.value,
                 iconRes = row.iconRes,
                 modifier = Modifier.fillMaxWidth(),
+                showBorderInDarkTheme = true,
             )
         }
     }

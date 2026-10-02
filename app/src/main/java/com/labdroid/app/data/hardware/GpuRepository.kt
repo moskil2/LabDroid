@@ -13,10 +13,15 @@ data class GpuSnapshot(
     val renderer: String,
     val vendor: String,
     val glVersion: String,
+    val glslVersion: String,
     val eglVersion: String,
     val glExtensionsCount: Int,
+    val maxTextureSize: Int?,
+    val maxViewportDims: String?,
     val vulkanSupported: Boolean,
     val vulkanVersion: String?,
+    val vulkanHardwareLevel: Int?,
+    val vulkanComputeSupported: Boolean,
 )
 
 class GpuRepository @Inject constructor(@ApplicationContext private val context: Context) {
@@ -25,17 +30,26 @@ class GpuRepository @Inject constructor(@ApplicationContext private val context:
         val strings = queryGlStrings()
         val vulkanSupported = context.packageManager
             .hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL)
-        val vulkanFeature = context.packageManager.systemAvailableFeatures
+        val vulkanVersionFeature = context.packageManager.systemAvailableFeatures
             .firstOrNull { it.name == PackageManager.FEATURE_VULKAN_HARDWARE_VERSION }
+        val vulkanLevelFeature = context.packageManager.systemAvailableFeatures
+            .firstOrNull { it.name == PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL }
+        val vulkanComputeSupported = context.packageManager
+            .hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_COMPUTE)
         val unknown = context.getString(R.string.cameras_unknown)
         return GpuSnapshot(
             renderer = strings?.renderer ?: unknown,
             vendor = strings?.vendor ?: unknown,
             glVersion = strings?.version ?: unknown,
+            glslVersion = strings?.glslVersion ?: unknown,
             eglVersion = strings?.eglVersion ?: unknown,
             glExtensionsCount = strings?.extensionsCount ?: 0,
+            maxTextureSize = strings?.maxTextureSize,
+            maxViewportDims = strings?.maxViewportDims,
             vulkanSupported = vulkanSupported,
-            vulkanVersion = vulkanFeature?.version?.takeIf { it > 0 }?.let { decodeVulkanVersion(it) },
+            vulkanVersion = vulkanVersionFeature?.version?.takeIf { it > 0 }?.let { decodeVulkanVersion(it) },
+            vulkanHardwareLevel = vulkanLevelFeature?.version,
+            vulkanComputeSupported = vulkanComputeSupported,
         )
     }
 
@@ -50,8 +64,11 @@ class GpuRepository @Inject constructor(@ApplicationContext private val context:
         val renderer: String,
         val vendor: String,
         val version: String,
+        val glslVersion: String,
         val eglVersion: String,
         val extensionsCount: Int,
+        val maxTextureSize: Int?,
+        val maxViewportDims: String?,
     )
 
     private fun queryGlStrings(): GlStrings? {
@@ -89,12 +106,20 @@ class GpuRepository @Inject constructor(@ApplicationContext private val context:
                         .split(" ")
                         .count { it.isNotBlank() }
                     val unknown = context.getString(R.string.cameras_unknown)
+                    val maxTextureSizeOut = IntArray(1)
+                    GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSizeOut, 0)
+                    val maxViewportDimsOut = IntArray(2)
+                    GLES20.glGetIntegerv(GLES20.GL_MAX_VIEWPORT_DIMS, maxViewportDimsOut, 0)
                     return GlStrings(
                         renderer = GLES20.glGetString(GLES20.GL_RENDERER) ?: unknown,
                         vendor = GLES20.glGetString(GLES20.GL_VENDOR) ?: unknown,
                         version = GLES20.glGetString(GLES20.GL_VERSION) ?: unknown,
+                        glslVersion = GLES20.glGetString(GLES20.GL_SHADING_LANGUAGE_VERSION) ?: unknown,
                         eglVersion = eglVersion,
                         extensionsCount = extensionsCount,
+                        maxTextureSize = maxTextureSizeOut[0].takeIf { it > 0 },
+                        maxViewportDims = "${maxViewportDimsOut[0]} × ${maxViewportDimsOut[1]}"
+                            .takeIf { maxViewportDimsOut[0] > 0 },
                     )
                 } finally {
                     EGL14.eglMakeCurrent(

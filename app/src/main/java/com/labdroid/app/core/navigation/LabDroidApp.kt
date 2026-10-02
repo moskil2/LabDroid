@@ -93,7 +93,7 @@ private val bottomNavEntries: List<BottomNavEntry> =
 private fun CompactBottomNav(currentRoute: String?, darkTheme: Boolean, onEntryClick: (BottomNavEntry) -> Unit) {
     val backgroundColor = if (darkTheme) DarkBottomNavBackground else MaterialTheme.colorScheme.surfaceContainer
     Surface(color = backgroundColor, tonalElevation = 3.dp) {
-        Column(modifier = Modifier.navigationBarsPadding()) {
+        Column(modifier = Modifier.padding(top = 8.dp).navigationBarsPadding()) {
             bottomNavEntries.chunked(4).forEach { row ->
                 Row(modifier = Modifier.fillMaxWidth()) {
                     row.forEach { entry ->
@@ -101,7 +101,7 @@ private fun CompactBottomNav(currentRoute: String?, darkTheme: Boolean, onEntryC
                         val tint = if (selected) {
                             MaterialTheme.colorScheme.primary
                         } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                            MaterialTheme.colorScheme.onSurface
                         }
                         val iconAlpha = if (!darkTheme || selected) 1f else 0.55f
                         val label = stringResource(entry.labelRes)
@@ -194,23 +194,25 @@ fun LabDroidApp(
 
         ModalNavigationDrawer(
             drawerState = drawerState,
+            gesturesEnabled = false,
             drawerContent = {
                 AppDrawerContent(
                     darkTheme = darkTheme,
                     onToggleTheme = { themeViewModel.toggleTheme(darkTheme) },
-                    onOpenSpotRobotics = {
+                    onOpenUrl = { url ->
                         coroutineScope.launch { drawerState.close() }
-                        context.startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse("https://spotrobotics.app")),
-                        )
+                        runCatching {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        }
                     },
                     onContactEmail = {
                         coroutineScope.launch { drawerState.close() }
-                        context.startActivity(
-                            Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:tomasz.pieczara@gazeta.pl")),
-                        )
+                        runCatching {
+                            context.startActivity(
+                                Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:tomasz.pieczara@gazeta.pl")),
+                            )
+                        }
                     },
-                    onClose = { coroutineScope.launch { drawerState.close() } },
                 )
             },
         ) {

@@ -34,6 +34,19 @@
     <string name="drawer_version">Version %1$s</string>
     <string name="drawer_dark_theme">Dark theme</string>
     <string name="drawer_created_by">Created by</string>
+    <string name="drawer_created_by_line">Created by %1$s</string>
+    <string name="drawer_version_label">Version</string>
+    <string name="drawer_build_label">Build</string>
+    <string name="drawer_website_label">Website</string>
+    <string name="drawer_github_label">GitHub</string>
+    <string name="drawer_github_display" translatable="false">github.com/moskil2/LabDroid</string>
+    <string name="drawer_terms_label">Terms of service</string>
+    <string name="drawer_terms_body">LabDroid is a hobby program for people who want to see what their phone\'s sensors and hardware report. It only reads and displays data provided by the Android system and lets you export it yourself - it does not change any system or hardware settings. Readings depend on your device and its sensors and may be inaccurate, incomplete or unavailable, so do not rely on them where precise measurements matter for safety, health, or legal or financial decisions. By using the app you are fully responsible for how you use it. The app is provided \"as is\", without any warranty of uninterrupted or flawless operation. The developer bears no responsibility whatsoever for damage resulting from using the app - you use it at your own risk.</string>
+    <string name="drawer_support_label">Contact / Report bug / Feature request</string>
+    <string name="drawer_support_body">Found a bug or have an idea for a new feature? Just want to say hi? Fill out a short form - every message is read personally.</string>
+    <string name="drawer_support_link">Open support form →</string>
+    <string name="drawer_copyright_label">Copyright</string>
+    <string name="drawer_copyright_body">© 2026 Tomasz Pieczara. All rights reserved. The source code, assets, and documentation of this app are the property of the developer. Copying, modifying, redistributing, or selling all or part of the code, in source or compiled form, without the developer\'s written consent is prohibited. The GitHub repository is made available for viewing only - forking or copying the code does not grant any rights to use it. The app (APK) is distributed exclusively through the official LabDroid GitHub repository.</string>
     <string name="drawer_author_name">Tomasz Pieczara</string>
     <string name="drawer_author_site">spotrobotics.app</string>
     <string name="drawer_close">Close</string>
@@ -41,7 +54,7 @@
     <string name="drawer_compatibility_label">Android compatibility</string>
     <string name="drawer_contact_label">Contact</string>
     <string name="drawer_contact_email">tomasz.pieczara@gazeta.pl</string>
-    <string name="drawer_privacy_body">Privacy policy — LabDroid %1$s\n\nLabDroid reads data from sensors, location, camera and other hardware components exclusively on your device, only to display it inside the app or to let you export it yourself. No data ever leaves your device automatically: there are no remote servers, no analytics SDKs, no ad networks and no third parties involved.\n\nThe only data that leaves your device is a file you explicitly choose to export or share using your own device\'s share/export function.\n\nBecause no personal data is collected, stored remotely or processed by us, there is no profiling and no cross-app tracking. Since all processing happens locally on your device, you remain fully in control of your data at all times, and uninstalling the app removes everything it has ever produced.\n\nContact for any privacy-related question: tomasz.pieczara@gazeta.pl.</string>
+    <string name="drawer_privacy_body">Privacy policy - LabDroid %1$s\n\nLabDroid reads data from sensors, location, camera and other hardware components exclusively on your device, only to display it inside the app or to let you export it yourself. No data ever leaves your device automatically: there are no remote servers, no analytics SDKs, no ad networks and no third parties involved.\n\nThe only data that leaves your device is a file you explicitly choose to export or share using your own device\'s share/export function.\n\nBecause no personal data is collected, stored remotely or processed by us, there is no profiling and no cross-app tracking. Since all processing happens locally on your device, you remain fully in control of your data at all times, and uninstalling the app removes everything it has ever produced.\n\nContact for any privacy-related question: tomasz.pieczara@gazeta.pl.</string>
     <string name="drawer_compatibility_body">LabDroid relies exclusively on official, public Android APIs to read information about sensors, hardware, location, camera and connectivity. All permissions are declared in the app manifest and requested at runtime following Google\'s guidelines.\n\nSupported Android versions: Android 8.0 Oreo (API 26) and newer, up to and including the latest Android 16 (API 36):\n\n• Android 8.0 / 8.1 Oreo (API 26-27)\n• Android 9 Pie (API 28)\n• Android 10 (API 29)\n• Android 11 (API 30)\n• Android 12 / 12L (API 31-32)\n• Android 13 (API 33)\n• Android 14 (API 34)\n• Android 15 (API 35)\n• Android 16 (API 36)\n\nSome hardware-dependent readings (e.g. flash strength levels, battery cycle count) are only available on newer Android versions or specific devices; the app clearly marks such values as unavailable when the platform or hardware does not support them.</string>
 
     <!-- Settings screen -->
@@ -61,6 +74,7 @@
     <string name="permission_location">Location</string>
     <string name="permission_camera">Camera</string>
     <string name="permission_body_sensors">Body sensors</string>
+    <string name="permission_activity_recognition">Physical activity (steps)</string>
     <string name="permission_bluetooth">Bluetooth</string>
     <string name="permission_phone_state">Phone state</string>
     <string name="permission_notifications">Notifications</string>
@@ -106,13 +120,13 @@
     <!-- Sensor friendly names -->
     <string name="sensor_name_light">Light sensor</string>
     <string name="sensor_name_barometer">Barometer</string>
-    <string name="sensor_name_gyroscope">Gyroscope</string>
-    <string name="sensor_name_gyroscope_uncalibrated">Gyroscope (uncalibrated)</string>
+    <string name="sensor_name_gyroscope">Gyroscope (corrected)</string>
+    <string name="sensor_name_gyroscope_uncalibrated">Gyroscope (raw)</string>
     <string name="sensor_name_orientation">Orientation sensor</string>
-    <string name="sensor_name_magnetometer">Magnetometer</string>
-    <string name="sensor_name_magnetometer_uncalibrated">Magnetometer (uncalibrated)</string>
-    <string name="sensor_name_accelerometer">Accelerometer</string>
-    <string name="sensor_name_accelerometer_uncalibrated">Accelerometer (uncalibrated)</string>
+    <string name="sensor_name_magnetometer">Magnetometer (corrected)</string>
+    <string name="sensor_name_magnetometer_uncalibrated">Magnetometer (raw)</string>
+    <string name="sensor_name_accelerometer">Accelerometer (corrected)</string>
+    <string name="sensor_name_accelerometer_uncalibrated">Accelerometer (raw)</string>
     <string name="sensor_name_gravity">Gravity sensor</string>
     <string name="sensor_name_linear_acceleration">Linear acceleration</string>
     <string name="sensor_name_rotation_vector">Rotation vector</string>
@@ -123,8 +137,6 @@
     <string name="sensor_name_humidity">Humidity sensor</string>
     <string name="sensor_name_heart_rate">Heart rate sensor</string>
     <string name="sensor_name_step_counter">Step counter</string>
-    <string name="sensor_name_step_detector">Step detector</string>
-    <string name="sensor_name_significant_motion">Significant motion</string>
     <string name="sensor_name_generic">Sensor</string>
     <string name="sensors_status_ok">ok</string>
     <string name="sensors_status_waiting">waiting</string>
@@ -261,6 +273,11 @@
     <string name="connectivity_sim_not_ready">Not ready</string>
     <string name="connectivity_available">Available</string>
     <string name="connectivity_unavailable">Unavailable</string>
+    <string name="connectivity_signal_level">level %1$d/4</string>
+    <string name="connectivity_data_connected">Connected</string>
+    <string name="connectivity_data_connecting">Connecting…</string>
+    <string name="connectivity_data_disconnected">Disconnected</string>
+    <string name="connectivity_data_suspended">Suspended</string>
 
     <!-- Hardware screen -->
     <string name="hardware_section_cpu">CPU</string>
@@ -274,24 +291,41 @@
     <string name="hardware_renderer">Renderer</string>
     <string name="hardware_vendor">Vendor</string>
     <string name="hardware_gl_version">GL version</string>
+    <string name="hardware_glsl_version">GLSL version</string>
     <string name="hardware_egl_version">EGL version</string>
     <string name="hardware_gl_extensions">GL extensions</string>
     <string name="hardware_extensions_count">%1$d supported</string>
+    <string name="hardware_max_texture_size">Max texture size</string>
+    <string name="hardware_max_viewport_dims">Max viewport size</string>
     <string name="hardware_vulkan">Vulkan</string>
-    <string name="hardware_section_memory">Memory</string>
+    <string name="hardware_vulkan_hardware_level">Vulkan hardware level</string>
+    <string name="hardware_vulkan_compute">Vulkan compute</string>
+    <string name="hardware_section_memory">RAM</string>
     <string name="hardware_total">Total</string>
     <string name="hardware_available">Available</string>
     <string name="hardware_available_kernel">Available (kernel)</string>
     <string name="hardware_low_memory_threshold">Low-memory threshold</string>
     <string name="hardware_low_memory_state">Low memory state</string>
     <string name="hardware_swap_total">Swap total</string>
+    <string name="hardware_swap_free">Swap free</string>
+    <string name="hardware_cached">Cached</string>
+    <string name="hardware_buffers">Buffers</string>
+    <string name="hardware_memory_class">Per-app memory limit</string>
+    <string name="hardware_large_memory_class">Per-app memory limit (largeHeap)</string>
+    <string name="hardware_low_ram_device">Low-RAM device</string>
     <string name="hardware_section_storage">Storage</string>
     <string name="hardware_free">Free</string>
+    <string name="hardware_used">Used</string>
+    <string name="hardware_storage_removable">Removable storage %1$d</string>
     <string name="hardware_section_battery">Battery</string>
     <string name="hardware_section_display">Display</string>
     <string name="hardware_resolution">Resolution</string>
     <string name="hardware_density">Density</string>
     <string name="hardware_refresh_rate">Refresh rate</string>
+    <string name="hardware_density_dpi">Density</string>
+    <string name="hardware_diagonal_size">Screen diagonal</string>
+    <string name="hardware_supported_refresh_rates">Supported refresh rates</string>
+    <string name="hardware_wide_color_gamut">Wide color gamut</string>
     <string name="hardware_hdr">HDR</string>
     <string name="hardware_section_flashlight">Flashlight</string>
     <string name="hardware_available_flag">Available</string>
@@ -305,23 +339,35 @@
     <string name="hardware_low_latency_audio">Low-latency audio</string>
     <string name="hardware_pro_audio">Pro audio</string>
     <string name="hardware_none">None</string>
-    <string name="hardware_section_connectivity">Connectivity</string>
+    <string name="hardware_section_network">Network</string>
     <string name="hardware_active_connection">Active connection</string>
     <string name="hardware_metered">Metered</string>
     <string name="hardware_internet_validated">Internet validated</string>
+    <string name="hardware_section_wifi">Wi-Fi</string>
     <string name="hardware_wifi_ssid">Wi-Fi SSID</string>
     <string name="hardware_wifi_signal">Wi-Fi signal</string>
     <string name="hardware_wifi_frequency">Wi-Fi frequency</string>
     <string name="hardware_wifi_link_speed">Wi-Fi link speed</string>
     <string name="hardware_wifi_standard">Wi-Fi standard</string>
+    <string name="hardware_section_cellular">Cellular (GSM)</string>
     <string name="hardware_cellular_operator">Cellular operator</string>
+    <string name="hardware_cellular_mcc_mnc">Operator code (MCC/MNC)</string>
     <string name="hardware_cellular_generation">Cellular generation</string>
+    <string name="hardware_cellular_signal">Signal strength</string>
+    <string name="hardware_cellular_data_state">Data connection</string>
     <string name="hardware_cellular_roaming">Cellular roaming</string>
+    <string name="hardware_cellular_country">Network country</string>
     <string name="hardware_sim_state">SIM state</string>
+    <string name="hardware_section_bluetooth">Bluetooth</string>
     <string name="hardware_bluetooth">Bluetooth</string>
     <string name="hardware_bluetooth_adapter">Bluetooth adapter</string>
     <string name="hardware_bluetooth_enabled">Bluetooth enabled</string>
     <string name="hardware_paired_devices">Paired devices</string>
+    <string name="hardware_paired_device_names">Paired device names</string>
+    <string name="hardware_bluetooth_le">Bluetooth LE</string>
+    <string name="hardware_bluetooth_le_audio">LE Audio</string>
+    <string name="hardware_bluetooth_multi_advertisement">Multiple advertisement</string>
+    <string name="hardware_section_nfc">NFC</string>
     <string name="hardware_nfc">NFC</string>
 
     <!-- Dashboard screen -->
@@ -383,4 +429,14 @@
     <string name="sound_metadata_sample_rate">Sample rate</string>
     <string name="sound_metadata_note">Note</string>
     <string name="sound_metadata_note_value">Relative level derived from the microphone signal, not a calibrated SPL reading</string>
+
+    <!-- GSM signal (cellular pseudo-sensor) -->
+    <string name="sensor_gsm_signal_name">GSM signal</string>
+    <string name="sensor_gsm_signal_subtitle">Cellular</string>
+    <string name="gsm_signal_permission_rationale">Phone state access is needed to read the live cellular signal strength.</string>
+    <string name="gsm_signal_grant_permission">Grant phone state permission</string>
+    <string name="gsm_signal_metadata_source">Source</string>
+    <string name="gsm_signal_metadata_source_value">Cellular modem (TelephonyManager)</string>
+    <string name="gsm_signal_metadata_note">Note</string>
+    <string name="gsm_signal_metadata_note_value">Signal strength in dBm of the strongest measured cell; requires an active SIM</string>
 </resources>

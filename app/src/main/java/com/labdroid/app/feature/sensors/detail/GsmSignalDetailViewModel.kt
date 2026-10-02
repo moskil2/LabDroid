@@ -1,17 +1,13 @@
 package com.labdroid.app.feature.sensors.detail
 
 import android.net.Uri
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labdroid.app.data.export.ExportFormat
 import com.labdroid.app.data.export.ExportRepository
 import com.labdroid.app.data.export.SensorSampleRow
+import com.labdroid.app.data.sensors.GsmSignalRepository
 import com.labdroid.app.data.sensors.SensorDelayOption
-import com.labdroid.app.data.sensors.SensorInfo
-import com.labdroid.app.data.sensors.SensorRepository
-import com.labdroid.app.data.sensors.hasAxisView
-import com.labdroid.app.data.sensors.sensorValue
 import com.labdroid.app.data.settings.PreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -19,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -27,21 +22,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SensorDetailViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
-    private val sensorRepository: SensorRepository,
+class GsmSignalDetailViewModel @Inject constructor(
+    private val gsmSignalRepository: GsmSignalRepository,
     private val exportRepository: ExportRepository,
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
-    private val sensorType: Int = checkNotNull(savedStateHandle["type"])
-    val sensorInfo: SensorInfo? = sensorRepository.getSensorInfo(sensorType)
-
     private val history = ArrayDeque<Pair<Long, Float>>()
-    private val showsAxisView = sensorInfo?.type?.let(::hasAxisView) ?: false
-    private val axisHistoryX = ArrayDeque<Float>()
-    private val axisHistoryY = ArrayDeque<Float>()
-    private val axisHistoryZ = ArrayDeque<Float>()
 
     private val _uiState = MutableStateFlow(SensorDetailUiState())
     val uiState: StateFlow<SensorDetailUiState> = _uiState.asStateFlow()
@@ -54,51 +41,37 @@ class SensorDetailViewModel @Inject constructor(
     private var lastAcceptedAtMillis = 0L
 
     init {
-        viewModelScope.launch {
-            val defaultSpeed = preferencesRepository.userPreferences.first().defaultSamplingSpeed
-            _uiState.update { it.copy(delayOption = defaultSpeed) }
-            startCollecting()
-        }
+        startCollecting()
+    }
+
+    fun restartCollecting() {
+        collectionJob?.cancel()
+        startCollecting()
     }
 
     /**
-     * Registers the sensor listener exactly once, at the fastest rate any delay option could ever
-     * need. Switching Fast/Normal/Slow afterwards ([selectDelay]) never re-registers — it only
-     * changes the software throttle below — so rapid switching can no longer race a still-closing
-     * previous registration into double-counting samples.
+     * The telephony callback is registered exactly once; Fast/Normal/Slow only throttles which
+     * pushed updates get *accepted* below, so [selectDelay] never re-registers the listener.
      */
     private fun startCollecting() {
-        val sensor = sensorInfo?.sensor ?: return
         collectionJob = viewModelScope.launch {
-            sensorRepository.observeSensorReadings(sensor, SensorDelayOption.FAST.periodUs).collect { reading ->
+            gsmSignalRepository.observeSignalDbm().collect { dbm ->
                 if (_uiState.value.isPaused) return@collect
                 val now = System.currentTimeMillis()
                 val minIntervalMs = _uiState.value.delayOption.periodUs / 1000L
                 if (now - lastAcceptedAtMillis < minIntervalMs) return@collect
                 lastAcceptedAtMillis = now
-                onSample(now, sensorValue(sensor.type, reading.values), reading.values)
+                onSample(now, dbm)
             }
         }
     }
 
-    private fun onSample(timestampMillis: Long, value: Float, rawValues: FloatArray) {
+    private fun onSample(timestampMillis: Long, value: Float) {
         history.addLast(timestampMillis to value)
-        if (history.size > HISTORY_SIZE) history.removeFirst()
+        if (history.size > SensorDetailViewModel.HISTORY_SIZE) history.removeFirst()
         val values = history.map { it.second }
         val avg = values.average().toFloat()
         val variance = values.sumOf { ((it - avg) * (it - avg)).toDouble() } / values.size
-
-        if (showsAxisView && rawValues.size >= 3) {
-            axisHistoryX.addLast(rawValues[0])
-            axisHistoryY.addLast(rawValues[1])
-            axisHistoryZ.addLast(rawValues[2])
-            if (axisHistoryX.size > HISTORY_SIZE) {
-                axisHistoryX.removeFirst()
-                axisHistoryY.removeFirst()
-                axisHistoryZ.removeFirst()
-            }
-        }
-
         _uiState.update {
             it.copy(
                 latestValue = value,
@@ -107,11 +80,6 @@ class SensorDetailViewModel @Inject constructor(
                 maxValue = values.max(),
                 average = avg,
                 stdDev = kotlin.math.sqrt(variance).toFloat(),
-                axisHistory = if (showsAxisView) {
-                    AxisHistory(axisHistoryX.toList(), axisHistoryY.toList(), axisHistoryZ.toList())
-                } else {
-                    null
-                },
             )
         }
     }
@@ -127,9 +95,6 @@ class SensorDetailViewModel @Inject constructor(
     fun reset() {
         lastAcceptedAtMillis = 0L
         history.clear()
-        axisHistoryX.clear()
-        axisHistoryY.clear()
-        axisHistoryZ.clear()
         _uiState.update {
             it.copy(
                 history = emptyList(),
@@ -138,24 +103,18 @@ class SensorDetailViewModel @Inject constructor(
                 maxValue = null,
                 average = null,
                 stdDev = null,
-                axisHistory = if (showsAxisView) AxisHistory() else null,
             )
         }
     }
 
     fun exportHistory(uri: Uri, format: ExportFormat) {
-        val label = sensorInfo?.name ?: "sensor"
-        val rows = history.map { (timestamp, value) -> SensorSampleRow(timestamp, label, value) }
+        val rows = history.map { (timestamp, value) -> SensorSampleRow(timestamp, "gsm_signal", value) }
         viewModelScope.launch {
-            exportRepository.exportSensorSamples(uri, format, label, rows)
+            exportRepository.exportSensorSamples(uri, format, "gsm_signal", rows)
         }
     }
 
     override fun onCleared() {
         collectionJob?.cancel()
-    }
-
-    companion object {
-        const val HISTORY_SIZE = 150
     }
 }

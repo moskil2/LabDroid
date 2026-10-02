@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,13 +21,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Copyright
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,27 +45,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.labdroid.app.BuildConfig
 import com.labdroid.app.R
 import com.labdroid.app.core.designsystem.theme.VividGreen
+
+const val WEBSITE_URL = "https://spotrobotics.app"
+const val GITHUB_URL = "https://github.com/moskil2/LabDroid"
+const val SUPPORT_FORM_URL = "https://spotrobotics.app/support/"
 
 @Composable
 fun AppDrawerContent(
     darkTheme: Boolean,
     onToggleTheme: () -> Unit,
-    onOpenSpotRobotics: () -> Unit,
+    onOpenUrl: (String) -> Unit,
     onContactEmail: () -> Unit,
-    onClose: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val appVersionName = remember {
-        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }
-            .getOrNull() ?: "unknown"
-    }
+    val appVersionName = BuildConfig.VERSION_NAME
     val drawerIconGreen = VividGreen
 
     ModalDrawerSheet {
@@ -107,37 +109,73 @@ fun AppDrawerContent(
                         Text(text = stringResource(R.string.drawer_dark_theme), style = MaterialTheme.typography.bodyLarge)
                         Switch(checked = darkTheme, onCheckedChange = { onToggleTheme() })
                     }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                    )
-                    Text(
-                        text = stringResource(R.string.drawer_created_by),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(text = stringResource(R.string.drawer_author_name), style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        text = stringResource(R.string.drawer_author_site),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = drawerIconGreen,
-                        modifier = Modifier.clickable(onClick = onOpenSpotRobotics),
-                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                InfoCard {
+                    Text(
+                        text = stringResource(R.string.drawer_created_by_line, stringResource(R.string.drawer_author_name)),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+
+                InfoCard {
+                    InfoRow(label = stringResource(R.string.drawer_version_label), value = appVersionName)
+                    InfoDivider()
+                    InfoRow(label = stringResource(R.string.drawer_build_label), value = BuildConfig.BUILD_STAMP)
+                }
+
+                InfoCard {
+                    InfoRow(
+                        label = stringResource(R.string.drawer_contact_label),
+                        value = stringResource(R.string.drawer_contact_email),
+                        onClick = onContactEmail,
+                    )
+                    InfoDivider()
+                    InfoRow(
+                        label = stringResource(R.string.drawer_website_label),
+                        value = stringResource(R.string.drawer_author_site),
+                        onClick = { onOpenUrl(WEBSITE_URL) },
+                    )
+                    InfoDivider()
+                    InfoRow(
+                        label = stringResource(R.string.drawer_github_label),
+                        value = stringResource(R.string.drawer_github_display),
+                        onClick = { onOpenUrl(GITHUB_URL) },
+                    )
+                }
+
                 PillMenuTile(
                     icon = Icons.Outlined.PrivacyTip,
                     label = stringResource(R.string.drawer_privacy_label),
                     iconTint = drawerIconGreen,
                 ) {
+                    TileBody(stringResource(R.string.drawer_privacy_body, appVersionName))
+                }
+
+                PillMenuTile(
+                    icon = Icons.Outlined.Description,
+                    label = stringResource(R.string.drawer_terms_label),
+                    iconTint = drawerIconGreen,
+                ) {
+                    TileBody(stringResource(R.string.drawer_terms_body))
+                }
+
+                PillMenuTile(
+                    icon = Icons.Outlined.Feedback,
+                    label = stringResource(R.string.drawer_support_label),
+                    iconTint = drawerIconGreen,
+                ) {
+                    TileBody(stringResource(R.string.drawer_support_body))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = stringResource(R.string.drawer_privacy_body, appVersionName),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = stringResource(R.string.drawer_support_link),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                        color = drawerIconGreen,
+                        modifier = Modifier.clickable { onOpenUrl(SUPPORT_FORM_URL) },
                     )
                 }
 
@@ -146,42 +184,70 @@ fun AppDrawerContent(
                     label = stringResource(R.string.drawer_compatibility_label),
                     iconTint = drawerIconGreen,
                 ) {
-                    Text(
-                        text = stringResource(R.string.drawer_compatibility_body),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    TileBody(stringResource(R.string.drawer_compatibility_body))
                 }
 
                 PillMenuTile(
-                    icon = Icons.Outlined.Email,
-                    label = stringResource(R.string.drawer_contact_label),
+                    icon = Icons.Outlined.Copyright,
+                    label = stringResource(R.string.drawer_copyright_label),
                     iconTint = drawerIconGreen,
                 ) {
-                    Text(
-                        text = stringResource(R.string.drawer_contact_email),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = drawerIconGreen,
-                        modifier = Modifier.clickable(onClick = onContactEmail),
-                    )
+                    TileBody(stringResource(R.string.drawer_copyright_body))
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = onClose,
-                shape = RoundedCornerShape(percent = 50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.inverseSurface,
-                    contentColor = MaterialTheme.colorScheme.inverseOnSurface,
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(text = stringResource(R.string.drawer_close), style = MaterialTheme.typography.titleMedium)
-            }
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
+}
+
+@Composable
+private fun InfoCard(content: @Composable ColumnScope.() -> Unit) {
+    val cardShape = RoundedCornerShape(20.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(cardShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), cardShape)
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        content = content,
+    )
+}
+
+@Composable
+private fun InfoRow(label: String, value: String, onClick: (() -> Unit)? = null) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = if (onClick != null) VividGreen else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.End,
+        )
+    }
+}
+
+@Composable
+private fun InfoDivider() {
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+}
+
+@Composable
+private fun TileBody(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 @Composable

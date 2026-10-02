@@ -2,6 +2,7 @@ package com.labdroid.app.feature.sensors
 
 import android.hardware.SensorManager
 import androidx.lifecycle.ViewModel
+import com.labdroid.app.data.sensors.GsmSignalRepository
 import com.labdroid.app.data.sensors.SensorInfo
 import com.labdroid.app.data.sensors.SensorReading
 import com.labdroid.app.data.sensors.SensorRepository
@@ -14,6 +15,7 @@ import javax.inject.Inject
 class SensorsViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
     private val soundLevelRepository: SoundLevelRepository,
+    private val gsmSignalRepository: GsmSignalRepository,
 ) : ViewModel() {
     val sensors: List<SensorInfo> = sensorRepository.getSensorsByPriority()
 
@@ -21,4 +23,6 @@ class SensorsViewModel @Inject constructor(
         sensorRepository.observeSensorReadings(sensorInfo.sensor, SensorManager.SENSOR_DELAY_UI)
 
     fun observeSoundLevel(): Flow<Float> = soundLevelRepository.observeDecibels(intervalMs = 200L)
+
+    fun observeGsmSignal(): Flow<Float> = gsmSignalRepository.observeSignalDbm()
 }

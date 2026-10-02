@@ -12,7 +12,6 @@ import androidx.compose.material.icons.outlined.Sensors
 import androidx.compose.material.icons.outlined.South
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Thermostat
-import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -41,11 +40,8 @@ object SensorIconMap {
         Sensor.TYPE_RELATIVE_HUMIDITY -> Icons.Outlined.WaterDrop
         Sensor.TYPE_AMBIENT_TEMPERATURE -> Icons.Outlined.Thermostat
 
-        Sensor.TYPE_STEP_COUNTER,
-        Sensor.TYPE_STEP_DETECTOR,
-        -> Icons.Outlined.DirectionsWalk
+        Sensor.TYPE_STEP_COUNTER -> Icons.Outlined.DirectionsWalk
 
-        Sensor.TYPE_SIGNIFICANT_MOTION -> Icons.Outlined.Vibration
         Sensor.TYPE_HEART_RATE -> Icons.Outlined.Favorite
 
         else -> Icons.Outlined.Sensors
