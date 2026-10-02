@@ -3,7 +3,7 @@
 Thanks for your interest in this project!
 
 ## Reporting bugs
-Open a new [issue](../../issues/new/choose) and describe the problem — steps to reproduce are very helpful.
+Open a new [issue](../../issues/new/choose) and describe the problem - steps to reproduce are very helpful.
 
 ## Suggesting features
 Have an idea for an improvement? Open an issue with the `enhancement` label, or start a thread in [Discussions](../../discussions).
